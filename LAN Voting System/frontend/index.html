@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>实时投票展示板</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1 class="title">实时投票展示板</h1>
+    </header>
+
+    <div class="topic-section">
+      <h2 id="topic" class="topic">加载中...</h2>
+      <div class="total-votes">
+        总投票人数: <span id="total-votes" class="total-count">0</span>
+      </div>
+    </div>
+
+    <div class="scenario-buttons">
+      <h3>预设场景</h3>
+      <div class="button-group">
+        <button class="scenario-btn" data-scenario="balanced">势均力敌的双选对决</button>
+        <button class="scenario-btn" data-scenario="landslide">一边倒的碾压局</button>
+        <button class="scenario-btn" data-scenario="cold">无人参与的冷场开局</button>
+        <button class="scenario-btn" data-scenario="tie">平票僵局状态</button>
+      </div>
+    </div>
+
+    <div class="test-buttons">
+      <h3>异常测试</h3>
+      <div class="button-group">
+        <button class="test-btn" id="test-overflow">数值溢出测试</button>
+        <button class="test-btn" id="test-concurrency">并发错误测试</button>
+        <button class="test-btn" id="reset-btn">重置投票</button>
+      </div>
+    </div>
+
+    <div class="voting-section">
+      <h3>投票选项</h3>
+      <div id="voting-options" class="voting-options"></div>
+    </div>
+
+    <div class="results-section">
+      <h3>实时排行榜</h3>
+      <div id="results-list" class="results-list"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

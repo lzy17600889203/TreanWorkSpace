@@ -1,0 +1,27 @@
+{
+  "topic": "你最喜欢的编程语言是？",
+  "options": [
+    {
+      "id": 1,
+      "name": "JavaScript",
+      "votes": 2
+    },
+    {
+      "id": 2,
+      "name": "Python",
+      "votes": 12
+    },
+    {
+      "id": 3,
+      "name": "Java",
+      "votes": 13
+    },
+    {
+      "id": 4,
+      "name": "Go",
+      "votes": 2
+    }
+  ],
+  "totalVotes": 29,
+  "createdAt": 1779953281921
+}
