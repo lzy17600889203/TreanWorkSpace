@@ -1,0 +1,753 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>云端记事本 - 自动保存</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      transition: background-color 0.5s ease, color 0.5s ease;
+      min-height: 100vh;
+    }
+
+    body.light-mode {
+      background-color: #ffffff;
+      color: #333333;
+    }
+
+    body.dark-mode {
+      background-color: #1a1a2e;
+      color: #e0e0e0;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 24px;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+      transition: border-color 0.5s ease;
+    }
+
+    .dark-mode .header {
+      border-color: rgba(255,255,255,0.1);
+    }
+
+    .header h1 {
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .btn {
+      padding: 8px 16px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .btn-primary {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background-color: #45a049;
+    }
+
+    .btn-secondary {
+      background-color: #f0f0f0;
+      color: #333;
+    }
+
+    .dark-mode .btn-secondary {
+      background-color: #2d2d44;
+      color: #e0e0e0;
+    }
+
+    .btn-secondary:hover {
+      background-color: #e0e0e0;
+    }
+
+    .dark-mode .btn-secondary:hover {
+      background-color: #3d3d5c;
+    }
+
+    .btn-toggle {
+      width: 48px;
+      height: 28px;
+      border-radius: 14px;
+      background-color: #ccc;
+      position: relative;
+      transition: background-color 0.3s ease;
+    }
+
+    .btn-toggle.active {
+      background-color: #4CAF50;
+    }
+
+    .btn-toggle::after {
+      content: '';
+      position: absolute;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background-color: white;
+      top: 2px;
+      left: 2px;
+      transition: transform 0.3s ease;
+    }
+
+    .btn-toggle.active::after {
+      transform: translateX(20px);
+    }
+
+    .preset-buttons {
+      display: flex;
+      gap: 12px;
+      padding: 16px 24px;
+      border-bottom: 1px solid rgba(0,0,0,0.1);
+      flex-wrap: wrap;
+    }
+
+    .dark-mode .preset-buttons {
+      border-color: rgba(255,255,255,0.1);
+    }
+
+    .preset-btn {
+      padding: 10px 20px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: all 0.3s ease;
+      background-color: transparent;
+    }
+
+    .dark-mode .preset-btn {
+      border-color: rgba(255,255,255,0.2);
+    }
+
+    .preset-btn:hover {
+      background-color: rgba(76, 175, 80, 0.1);
+      border-color: #4CAF50;
+    }
+
+    .editor-container {
+      display: flex;
+      height: calc(100vh - 180px);
+      padding: 16px 24px;
+      gap: 16px;
+    }
+
+    .editor-area {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    textarea {
+      flex: 1;
+      width: 100%;
+      padding: 16px;
+      font-size: 16px;
+      line-height: 1.6;
+      border: 1px solid #ddd;
+      border-radius: 8px;
+      resize: none;
+      font-family: inherit;
+      transition: background-color 0.5s ease, color 0.5s ease, border-color 0.5s ease;
+    }
+
+    .dark-mode textarea {
+      background-color: #2d2d44;
+      color: #e0e0e0;
+      border-color: rgba(255,255,255,0.1);
+    }
+
+    textarea:focus {
+      outline: none;
+      border-color: #4CAF50;
+      box-shadow: 0 0 0 3px rgba(76, 175, 80, 0.1);
+    }
+
+    .status-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 16px;
+      margin-top: 8px;
+      background-color: #f8f9fa;
+      border-radius: 6px;
+      transition: background-color 0.5s ease;
+    }
+
+    .dark-mode .status-bar {
+      background-color: #2d2d44;
+    }
+
+    .save-indicator {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .status-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      transition: all 0.5s ease;
+    }
+
+    .status-dot.saving {
+      background-color: #ff9800;
+      animation: pulse 1s infinite;
+    }
+
+    .status-dot.saved {
+      background-color: #4CAF50;
+      animation: glow 2s infinite;
+    }
+
+    .status-dot.error {
+      background-color: #f44336;
+      animation: shake 0.5s infinite;
+    }
+
+    .status-dot.offline {
+      background-color: #9e9e9e;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(1.2); }
+    }
+
+    @keyframes glow {
+      0%, 100% { box-shadow: 0 0 5px #4CAF50; }
+      50% { box-shadow: 0 0 15px #4CAF50, 0 0 20px #4CAF50; }
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-2px); }
+      75% { transform: translateX(2px); }
+    }
+
+    .word-count {
+      font-size: 14px;
+      font-weight: 500;
+      transition: all 0.3s ease;
+    }
+
+    .word-count.changing {
+      animation: countJump 0.3s ease;
+    }
+
+    @keyframes countJump {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-5px); }
+    }
+
+    .history-panel {
+      width: 320px;
+      background-color: #f8f9fa;
+      border-radius: 8px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      transition: background-color 0.5s ease;
+    }
+
+    .dark-mode .history-panel {
+      background-color: #2d2d44;
+    }
+
+    .history-panel h3 {
+      margin-bottom: 12px;
+      font-size: 16px;
+    }
+
+    .history-list {
+      flex: 1;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .history-item {
+      padding: 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border: 1px solid transparent;
+    }
+
+    .history-item:hover {
+      background-color: rgba(76, 175, 80, 0.1);
+      border-color: #4CAF50;
+    }
+
+    .history-item.selected {
+      background-color: rgba(76, 175, 80, 0.2);
+      border-color: #4CAF50;
+    }
+
+    .history-time {
+      font-size: 12px;
+      color: #666;
+      margin-bottom: 4px;
+    }
+
+    .dark-mode .history-time {
+      color: #999;
+    }
+
+    .history-preview {
+      font-size: 13px;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      color: #333;
+    }
+
+    .dark-mode .history-preview {
+      color: #ccc;
+    }
+
+    .cursor-blink {
+      position: absolute;
+      width: 2px;
+      height: 20px;
+      background-color: #4CAF50;
+      animation: blink 1s infinite;
+      pointer-events: none;
+      z-index: 100;
+    }
+
+    @keyframes blink {
+      0%, 50% { opacity: 1; }
+      51%, 100% { opacity: 0; }
+    }
+
+    .rollback-animation {
+      animation: rollback 0.5s ease-out;
+    }
+
+    @keyframes rollback {
+      0% { opacity: 0; transform: translateY(-10px); }
+      100% { opacity: 1; transform: translateY(0); }
+    }
+
+    .delay-status {
+      padding: 4px 8px;
+      border-radius: 4px;
+      font-size: 12px;
+      background-color: #ff9800;
+      color: white;
+      animation: delayPulse 1s infinite;
+    }
+
+    @keyframes delayPulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.6; }
+    }
+
+    .test-section {
+      padding: 16px 24px;
+      border-top: 1px solid rgba(0,0,0,0.1);
+      background-color: #fff3e0;
+    }
+
+    .dark-mode .test-section {
+      background-color: #3d2d1a;
+      border-color: rgba(255,255,255,0.1);
+    }
+
+    .test-section h4 {
+      margin-bottom: 12px;
+      font-size: 14px;
+    }
+
+    .test-buttons {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .test-btn {
+      padding: 8px 16px;
+      border: 1px solid #ff9800;
+      border-radius: 6px;
+      background-color: transparent;
+      cursor: pointer;
+      font-size: 13px;
+      transition: all 0.3s ease;
+      color: #ff9800;
+    }
+
+    .test-btn:hover {
+      background-color: #ff9800;
+      color: white;
+    }
+
+    .hidden {
+      display: none;
+    }
+  </style>
+</head>
+<body class="light-mode">
+  <div class="header">
+    <h1>📝 云端记事本</h1>
+    <div class="header-right">
+      <span id="delay-status" class="hidden delay-status">模拟延迟中</span>
+      <button id="toggle-delay" class="btn btn-secondary">模拟网络延迟</button>
+      <button id="night-mode-toggle" class="btn-toggle"></button>
+    </div>
+  </div>
+
+  <div class="preset-buttons">
+    <button class="preset-btn" data-preset="diary">📖 一篇完整的日记</button>
+    <button class="preset-btn" data-preset="novel">📚 数万字的长篇小说片段</button>
+    <button class="preset-btn" data-preset="emoji">😊 包含各种表情符号的文本</button>
+    <button class="preset-btn" data-preset="empty">📋 完全空白的初始状态</button>
+  </div>
+
+  <div class="editor-container">
+    <div class="editor-area">
+      <textarea id="editor" placeholder="开始编写..."></textarea>
+      <div class="status-bar">
+        <div class="save-indicator">
+          <span id="status-dot" class="status-dot saved"></span>
+          <span id="save-status">已保存</span>
+        </div>
+        <div id="word-count" class="word-count">0 字</div>
+      </div>
+    </div>
+
+    <div class="history-panel">
+      <h3>📜 历史版本</h3>
+      <div id="history-list" class="history-list"></div>
+    </div>
+  </div>
+
+  <div class="test-section">
+    <h4>⚠️ 边界测试工具</h4>
+    <div class="test-buttons">
+      <button class="test-btn" id="test-large-text">粘贴超大文本（约5万字）</button>
+      <button class="test-btn" id="test-special-chars">插入特殊 Unicode 字符</button>
+      <button class="test-btn" id="test-concurrent">模拟并发写入冲突</button>
+    </div>
+  </div>
+
+  <script>
+    const editor = document.getElementById('editor');
+    const statusDot = document.getElementById('status-dot');
+    const saveStatus = document.getElementById('save-status');
+    const wordCount = document.getElementById('word-count');
+    const historyList = document.getElementById('history-list');
+    const nightModeToggle = document.getElementById('night-mode-toggle');
+    const toggleDelayBtn = document.getElementById('toggle-delay-btn');
+    const delayStatus = document.getElementById('delay-status');
+
+    let debounceTimer = null;
+    let isDarkMode = false;
+    let delayEnabled = false;
+    let lastSavedContent = '';
+
+    const presets = {
+      diary: `2024年12月25日 星期三 晴
+
+今天是圣诞节，早上起床窗外就飘起了雪花，很美。
+
+上午和家人一起去教堂做礼拜，唱诗班的歌声特别动听。午后我们在家装饰圣诞树，孩子们兴奋地挂着各种彩灯和装饰品。
+
+晚上全家人围坐在壁炉旁，吃着烤火鸡和姜饼，交换礼物。
+
+小侄女收到了她一直想要的洋娃娃，开心得跳了起来。
+
+夜深了，孩子们都睡着了，我独自坐在窗前，看着飘落的雪花，心里充满了感恩。
+
+感谢这一年来所有的经历，感谢身边的家人和朋友。愿新的一年平安喜乐。
+
+晚安，这个美好的圣诞节。`,
+      
+      novel: (() => {
+        const paragraphs = [];
+        let text = '';
+        for (let i = 1; i <= 50; i++) {
+          paragraphs.push(`第${i}章 迷雾初现
+
+清晨的阳光透过窗帘的缝隙洒进房间，林雨辰缓缓睁开眼睛。窗外传来几声清脆的鸟鸣，空气中弥漫着淡淡的花香。他揉了揉惺忪的睡眼，看了一眼床头柜上的闹钟——已经是早上七点半了。
+
+"又是新的一天。"他喃喃自语道，掀开被子下床。
+
+走到窗边，他拉开窗帘，一股清新的空气扑面而来。远处的山峦笼罩在一层薄雾之中，若隐若现，宛如仙境。林雨辰深吸一口气，感受着这份宁静与美好。
+
+今天是他来到这个小镇的第三个月。三个月前，他因为一场突如其来的变故，毅然辞去了繁华都市里那份令人羡慕的工作，来到了这个远离喧嚣的地方。
+
+小镇的生活简单而惬意，每天日出而作，日落而息。林雨辰在这里找到了久违的平静，也渐渐开始重新审视自己的人生。
+
+然而，平静的生活并没有持续太久。就在昨天，他在整理阁楼的时候，意外发现了一个尘封已久的木箱，里面装着一些泛黄的信件和一本陈旧的日记。
+
+那些信件的字迹已经模糊不清，但日记却保存得相当完好。日记的主人是一个名叫苏婉清的女子，从日期来看，这本日记写于二十年前。
+
+林雨辰怀着好奇心翻开了日记的第一页，一段尘封的往事就此揭开序幕...
+
+`);
+        }
+        return paragraphs.join('\n');
+      })(),
+
+      emoji: `🎉 欢迎来到表情符号的世界！🌈
+
+今天心情超级棒！🌟 阳光明媚，微风轻拂，正是出游的好时节！🌞
+
+和朋友们一起去了公园，看到了好多可爱的小动物：🐰🐱🐶🐹🐻
+
+还拍了很多美美的照片！📸✨ 大家笑得都很开心！😄😁😊
+
+晚上一起去吃了火锅，热气腾腾的，超级满足！🍲🔥
+
+生活中处处都有小确幸，要学会发现和珍惜哦！💖
+
+✨✨✨✨✨✨✨✨✨✨
+
+🎈🎈🎈🎈🎈🎈🎈🎈🎈🎈
+
+🎊🎉🎊🎉🎊🎉🎊🎉🎊🎉
+
+❤️🧡💛💚💙💜🖤🤍🤎
+
+🌟⭐🌟⭐🌟⭐🌟⭐🌟⭐
+
+💫✨💫✨💫✨💫✨💫✨
+
+🎯🎯🎯🎯🎯🎯🎯🎯🎯🎯
+
+🎲🎲🎲🎲🎲🎲🎲🎲🎲🎲
+
+🎸🎹🎺🎻🎷🎤🎧🎼🎵🎶
+
+🍎🍊🍋🍇🍓🍑🍒🥝🍌🍉
+
+🍕🍔🍟🍿🍩🍪🍰🧁🍫🍬
+
+🚗🚄✈️🚢🚁🚲🛴🛵🚀🛸
+
+🌈🌤️⛅🌥️☁️🌧️⛈️❄️🌨️🌈`,
+
+      empty: ''
+    };
+
+    async function loadDraft() {
+      try {
+        const response = await fetch('/api/draft');
+        const data = await response.json();
+        editor.value = data.content;
+        lastSavedContent = data.content;
+        updateWordCount();
+      } catch (error) {
+        console.error('Failed to load draft:', error);
+      }
+    }
+
+    async function saveDraft(content) {
+      if (content === lastSavedContent) return;
+      
+      statusDot.className = 'status-dot saving';
+      saveStatus.textContent = '保存中...';
+
+      try {
+        const response = await fetch('/api/draft', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content })
+        });
+        
+        if (response.ok) {
+          statusDot.className = 'status-dot saved';
+          saveStatus.textContent = '已保存';
+          lastSavedContent = content;
+          loadHistory();
+        } else {
+          throw new Error('Save failed');
+        }
+      } catch (error) {
+        statusDot.className = 'status-dot error';
+        saveStatus.textContent = '保存失败';
+        setTimeout(() => {
+          statusDot.className = 'status-dot saved';
+          saveStatus.textContent = '已保存';
+        }, 2000);
+      }
+    }
+
+    function debounceSave() {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        saveDraft(editor.value);
+      }, 1000);
+    }
+
+    function updateWordCount() {
+      const count = editor.value.length;
+      wordCount.textContent = `${count} 字`;
+      wordCount.classList.add('changing');
+      setTimeout(() => wordCount.classList.remove('changing'), 300);
+    }
+
+    async function loadHistory() {
+      try {
+        const response = await fetch('/api/history');
+        const data = await response.json();
+        historyList.innerHTML = data.map(item => `
+          <div class="history-item" data-id="${item.id}">
+            <div class="history-time">${formatTime(item.saved_at)}</div>
+            <div class="history-preview">${item.content.substring(0, 50)}${item.content.length > 50 ? '...' : ''}</div>
+          </div>
+        `).join('');
+        
+        document.querySelectorAll('.history-item').forEach(item => {
+          item.addEventListener('click', () => restoreHistory(item.dataset.id));
+        });
+      } catch (error) {
+        console.error('Failed to load history:', error);
+      }
+    }
+
+    function formatTime(timestamp) {
+      const date = new Date(timestamp);
+      return date.toLocaleString('zh-CN', {
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    async function restoreHistory(id) {
+      try {
+        const response = await fetch(`/api/restore/${id}`, { method: 'POST' });
+        const data = await response.json();
+        if (data.success) {
+          editor.classList.add('rollback-animation');
+          setTimeout(() => {
+            editor.value = data.content;
+            updateWordCount();
+            lastSavedContent = data.content;
+          }, 100);
+          setTimeout(() => editor.classList.remove('rollback-animation'), 500);
+        }
+      } catch (error) {
+        console.error('Failed to restore:', error);
+      }
+    }
+
+    function toggleNightMode() {
+      isDarkMode = !isDarkMode;
+      document.body.classList.toggle('dark-mode', isDarkMode);
+      nightModeToggle.classList.toggle('active', isDarkMode);
+      localStorage.setItem('darkMode', isDarkMode);
+    }
+
+    async function toggleDelay() {
+      try {
+        const response = await fetch('/api/toggle-delay', { method: 'POST' });
+        const data = await response.json();
+        delayEnabled = data.delayEnabled;
+        delayStatus.classList.toggle('hidden', !delayEnabled);
+      } catch (error) {
+        console.error('Failed to toggle delay:', error);
+      }
+    }
+
+    function insertSpecialChars() {
+      const specialChars = '𝄞𝌆𝔸𝕭𝖢𝕯𝖤𝖋𝌿ₐᵦ₨ℂℌℐ℘ℵⅅⅆ⅓⅔⅛⅜⅝⅞∰∱∲∳⊛⊚⊜⊝⊞⊟⊠⊡⊢⊣⊤⊥⊦⊧⊨⊩⊪⊫⊬⊭⊮⊯⊰⊱⊲⊳⊴⊵⊶⊷⊸⊹⊺⊻⊼⊽⊾⊿⋀⋁⋂⋃⋄⋅⋆⋇⋈⋉⋊⋋⋌⋍⋎⋏⋐⋑⋒⋓⋔⋕⋖⋗⋘⋙⋚⋛⋜⋝⋞⋟⋠⋡⋢⋣⋤⋥⋦⋧⋨⋩⋪⋫⋬⋭⋮⋯⋰⋱⟀⟁⟂⟃⟄⟅⟆⟇⟈⟉⟊⟋⟌⟍⟎⟏⟐⟑⟒⟓⟔⟕⟖⟗⟘⟙⟚⟛⟜⟝⟞⟟⟠⟡⟢⟣⟤⟥⟦⟧⟨⟩⟪⟫⟬⟭⟮⟯⟰⟱⟲⟳⟴⟵⟶⟷⟸⟹⟺⟻⟼⟽⟾⟿';
+      editor.value += specialChars;
+      updateWordCount();
+      debounceSave();
+    }
+
+    function insertLargeText() {
+      let largeText = '';
+      for (let i = 0; i < 50000; i++) {
+        largeText += '测';
+      }
+      editor.value = largeText;
+      updateWordCount();
+      debounceSave();
+    }
+
+    async function simulateConcurrentWrite() {
+      const originalContent = editor.value;
+      const modifiedContent1 = originalContent + '\n\n=== 用户A的修改 ===\n这是用户A添加的内容...';
+      const modifiedContent2 = originalContent + '\n\n=== 用户B的修改 ===\n这是用户B添加的内容...';
+
+      await fetch('/api/draft', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content: modifiedContent1 })
+      });
+
+      setTimeout(() => {
+        fetch('/api/draft', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ content: modifiedContent2 })
+        });
+      }, 100);
+
+      setTimeout(() => {
+        loadDraft();
+      }, 500);
+    }
+
+    editor.addEventListener('input', () => {
+      updateWordCount();
+      debounceSave();
+    });
+
+    nightModeToggle.addEventListener('click', toggleNightMode);
+
+    document.getElementById('toggle-delay').addEventListener('click', toggleDelay);
+
+    document.querySelectorAll('.preset-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const preset = btn.dataset.preset;
+        editor.value = presets[preset];
+        lastSavedContent = presets[preset];
+        updateWordCount();
+        if (presets[preset].length > 0) {
+          debounceSave();
+        }
+      });
+    });
+
+    document.getElementById('test-large-text').addEventListener('click', insertLargeText);
+    document.getElementById('test-special-chars').addEventListener('click', insertSpecialChars);
+    document.getElementById('test-concurrent').addEventListener('click', simulateConcurrentWrite);
+
+    loadDraft();
+    loadHistory();
+
+    setInterval(loadHistory, 10000);
+  </script>
+</body>
+</html>
