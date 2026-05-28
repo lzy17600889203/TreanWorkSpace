@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>任务管理工具</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>任务管理工具</h1>
+    </header>
+    
+    <div class="scenarios">
+      <button class="scenario-btn" onclick="loadScenario('standard')">标准日常工作流</button>
+      <button class="scenario-btn" onclick="loadScenario('overdue')">大量逾期任务堆积</button>
+      <button class="scenario-btn" onclick="loadScenario('empty')">空清单初始化状态</button>
+      <button class="scenario-btn" onclick="loadScenario('longtext')">超长标题文本测试</button>
+    </div>
+    
+    <div class="add-task">
+      <input type="text" id="taskInput" placeholder="添加新任务..." onkeydown="handleKeyDown(event)">
+      <select id="prioritySelect">
+        <option value="1">普通</option>
+        <option value="2">重要</option>
+        <option value="3">紧急</option>
+      </select>
+      <input type="date" id="dueDateInput">
+      <button id="addBtn" onclick="addTask()">添加</button>
+    </div>
+    
+    <div class="actions">
+      <button class="action-btn" onclick="clearCompleted()">清空已完成任务</button>
+    </div>
+    
+    <ul id="taskList" class="task-list"></ul>
+    
+    <div id="emptyState" class="empty-state">
+      <p>暂无任务，添加一个新任务开始吧！</p>
+    </div>
+  </div>
+  
+  <script src="app.js"></script>
+</body>
+</html>
