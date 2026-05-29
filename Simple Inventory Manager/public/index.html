@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>仓库商品进出库管理系统</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>仓库商品进出库管理系统</h1>
+    <div class="scenario-buttons">
+      <button class="scenario-btn" data-scenario="convenience">正常周转便利店</button>
+      <button class="scenario-btn" data-scenario="overstock">滞销品仓库</button>
+      <button class="scenario-btn" data-scenario="empty">空仓状态</button>
+      <button class="scenario-btn" data-scenario="negative">负数库存异常</button>
+    </div>
+  </header>
+
+  <main>
+    <section class="product-section">
+      <h2>商品列表</h2>
+      <div class="search-container">
+        <input type="text" id="searchInput" placeholder="搜索商品名称或SKU...">
+      </div>
+      <table class="product-table">
+        <thead>
+          <tr>
+            <th>名称</th>
+            <th>SKU</th>
+            <th>单价</th>
+            <th>库存</th>
+            <th>操作</th>
+            <th>出入库</th>
+          </tr>
+        </thead>
+        <tbody id="productTableBody"></tbody>
+      </table>
+    </section>
+
+    <section class="transaction-section">
+      <h2>出入库流水</h2>
+      <div class="transaction-controls">
+        <input type="number" id="newStockIn" placeholder="入库数量">
+        <input type="number" id="newStockOut" placeholder="出库数量">
+        <select id="selectProduct">
+          <option value="">选择商品</option>
+        </select>
+        <button id="btnStockIn">入库</button>
+        <button id="btnStockOut">出库</button>
+      </div>
+      <div class="transaction-list-container">
+        <ul id="transactionList"></ul>
+      </div>
+    </section>
+
+    <section class="report-section">
+      <h2>月度报表</h2>
+      <div class="chart-container">
+        <canvas id="monthlyChart"></canvas>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal" id="addProductModal">
+    <div class="modal-content">
+      <span class="close">&times;</span>
+      <h3>添加商品</h3>
+      <form id="addProductForm">
+        <input type="text" id="productName" placeholder="商品名称" required>
+        <input type="text" id="productSku" placeholder="SKU" required>
+        <input type="number" id="productPrice" placeholder="单价" step="0.01" required>
+        <button type="submit">添加</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="modal" id="errorModal">
+    <div class="modal-content error">
+      <span class="close">&times;</span>
+      <h3>错误</h3>
+      <p id="errorMessage"></p>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
