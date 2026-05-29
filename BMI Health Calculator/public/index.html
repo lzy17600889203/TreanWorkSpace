@@ -1,0 +1,934 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BMI健康计算器</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+      font-size: 2.5rem;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .main-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    }
+
+    .card-title {
+      font-size: 1.25rem;
+      color: #333;
+      margin-bottom: 20px;
+      padding-bottom: 10px;
+      border-bottom: 2px solid #eee;
+    }
+
+    .input-section {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .input-group label {
+      font-weight: 600;
+      color: #555;
+      margin-bottom: 8px;
+    }
+
+    .input-group input {
+      padding: 12px 16px;
+      border: 2px solid #ddd;
+      border-radius: 8px;
+      font-size: 1.1rem;
+      transition: all 0.3s ease;
+      outline: none;
+    }
+
+    .input-group input:focus {
+      border-color: #667eea;
+      box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.2), 0 0 20px rgba(102, 126, 234, 0.3);
+    }
+
+    .input-group input.error {
+      border-color: #e74c3c;
+      box-shadow: 0 0 10px rgba(231, 76, 60, 0.3);
+    }
+
+    .btn {
+      padding: 14px 24px;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-success {
+      background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+      color: white;
+    }
+
+    .btn-success:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(17, 153, 142, 0.4);
+    }
+
+    .btn-success.saved {
+      animation: shake 0.5s ease;
+    }
+
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-5px); }
+      40% { transform: translateX(5px); }
+      60% { transform: translateX(-3px); }
+      80% { transform: translateX(3px); }
+    }
+
+    .btn-danger {
+      background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+      color: white;
+    }
+
+    .btn-danger:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 5px 20px rgba(235, 51, 73, 0.4);
+    }
+
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 20px;
+    }
+
+    .preset-btn {
+      flex: 1;
+      min-width: calc(50% - 5px);
+      padding: 12px;
+      font-size: 0.9rem;
+      background: #f8f9fa;
+      color: #333;
+      border: 2px solid #e9ecef;
+    }
+
+    .preset-btn:hover {
+      background: #e9ecef;
+      border-color: #667eea;
+      color: #667eea;
+    }
+
+    .gauge-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      position: relative;
+    }
+
+    .gauge {
+      width: 280px;
+      height: 140px;
+      border-radius: 140px 140px 0 0;
+      background: linear-gradient(90deg, 
+        #3498db 0%, 
+        #2ecc71 33%, 
+        #f1c40f 66%, 
+        #e74c3c 100%);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .gauge::before {
+      content: '';
+      position: absolute;
+      top: 10px;
+      left: 10px;
+      right: 10px;
+      bottom: 0;
+      border-radius: 130px 130px 0 0;
+      background: white;
+    }
+
+    .gauge-marks {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      right: 20px;
+      bottom: 10px;
+      border-radius: 120px 120px 0 0;
+    }
+
+    .gauge-mark {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      width: 2px;
+      height: 15px;
+      background: #ddd;
+      transform-origin: bottom center;
+    }
+
+    .gauge-center {
+      width: 20px;
+      height: 20px;
+      background: #333;
+      border-radius: 50%;
+      position: absolute;
+      bottom: -10px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10;
+    }
+
+    .gauge-needle {
+      width: 4px;
+      height: 100px;
+      background: #333;
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform-origin: bottom center;
+      transform: translateX(-50%) rotate(-135deg);
+      transition: transform 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+      z-index: 5;
+    }
+
+    .gauge-needle::after {
+      content: '';
+      position: absolute;
+      top: -5px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 12px;
+      height: 12px;
+      background: #e74c3c;
+      border-radius: 50%;
+    }
+
+    .gauge-labels {
+      display: flex;
+      justify-content: space-between;
+      width: 280px;
+      margin-top: 10px;
+      font-size: 0.85rem;
+      color: #666;
+    }
+
+    .bmi-display {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .bmi-value {
+      font-size: 4rem;
+      font-weight: bold;
+      transition: color 0.5s ease;
+    }
+
+    .bmi-grade {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-top: 10px;
+      padding: 8px 20px;
+      display: inline-block;
+      border-radius: 20px;
+      transition: all 0.5s ease;
+    }
+
+    .grade-underweight {
+      color: #3498db;
+      background: rgba(52, 152, 219, 0.1);
+    }
+
+    .grade-normal {
+      color: #2ecc71;
+      background: rgba(46, 204, 113, 0.1);
+    }
+
+    .grade-overweight {
+      color: #f1c40f;
+      background: rgba(241, 196, 15, 0.1);
+    }
+
+    .grade-obese {
+      color: #e74c3c;
+      background: rgba(231, 76, 60, 0.1);
+    }
+
+    .chart-container {
+      position: relative;
+      height: 250px;
+      margin-top: 20px;
+    }
+
+    .chart-canvas {
+      width: 100%;
+      height: 100%;
+    }
+
+    .records-section {
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .record-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+      transition: background 0.3s ease;
+    }
+
+    .record-item:hover {
+      background: #f8f9fa;
+    }
+
+    .record-info {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .record-bmi {
+      font-size: 1.2rem;
+      font-weight: bold;
+    }
+
+    .record-meta {
+      font-size: 0.85rem;
+      color: #666;
+    }
+
+    .record-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-small {
+      padding: 6px 12px;
+      font-size: 0.8rem;
+    }
+
+    .error-message {
+      background: #ffebee;
+      color: #c62828;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 16px;
+      border-left: 4px solid #c62828;
+      animation: fadeIn 0.3s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .success-message {
+      background: #e8f5e9;
+      color: #2e7d32;
+      padding: 12px;
+      border-radius: 8px;
+      margin-top: 16px;
+      border-left: 4px solid #2e7d32;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .empty-state {
+      text-align: center;
+      padding: 40px;
+      color: #999;
+    }
+
+    .empty-state svg {
+      width: 64px;
+      height: 64px;
+      margin-bottom: 16px;
+      opacity: 0.5;
+    }
+
+    @media (max-width: 768px) {
+      .main-content {
+        grid-template-columns: 1fr;
+      }
+      
+      h1 {
+        font-size: 1.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>🏥 BMI健康计算器</h1>
+    
+    <div class="main-content">
+      <div class="card">
+        <h2 class="card-title">📊 输入数据</h2>
+        <div class="input-section">
+          <div class="input-group">
+            <label for="height">身高 (cm)</label>
+            <input type="text" id="height" placeholder="请输入身高">
+          </div>
+          <div class="input-group">
+            <label for="weight">体重 (kg)</label>
+            <input type="text" id="weight" placeholder="请输入体重">
+          </div>
+          
+          <button class="btn btn-primary" onclick="calculateBMI()">计算BMI</button>
+          <button class="btn btn-success" onclick="saveRecord()" id="saveBtn">保存记录</button>
+        </div>
+
+        <div class="btn-group">
+          <button class="btn preset-btn" onclick="loadPreset('normal')">标准健康成年人</button>
+          <button class="btn preset-btn" onclick="loadPreset('extreme')">极端异常值</button>
+          <button class="btn preset-btn" onclick="loadPreset('zero')">身高为零</button>
+          <button class="btn preset-btn" onclick="loadPreset('trend')">长期趋势数据</button>
+        </div>
+
+        <div id="message"></div>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">🎯 BMI仪表盘</h2>
+        <div class="gauge-container">
+          <div class="gauge">
+            <div class="gauge-marks">
+              <div class="gauge-mark" style="transform: translateX(-50%) rotate(-135deg);"></div>
+              <div class="gauge-mark" style="transform: translateX(-50%) rotate(-90deg);"></div>
+              <div class="gauge-mark" style="transform: translateX(-50%) rotate(-45deg);"></div>
+              <div class="gauge-mark" style="transform: translateX(-50%) rotate(0deg);"></div>
+              <div class="gauge-mark" style="transform: translateX(-50%) rotate(45deg);"></div>
+            </div>
+            <div class="gauge-needle" id="needle"></div>
+            <div class="gauge-center"></div>
+          </div>
+          <div class="gauge-labels">
+            <span>偏瘦</span>
+            <span>正常</span>
+            <span>超重</span>
+            <span>肥胖</span>
+          </div>
+        </div>
+        
+        <div class="bmi-display">
+          <div class="bmi-value" id="bmiValue">--</div>
+          <div class="bmi-grade" id="bmiGrade">请输入数据</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h2 class="card-title">📈 趋势图表</h2>
+        <div class="chart-container">
+          <canvas class="chart-canvas" id="trendChart"></canvas>
+        </div>
+      </div>
+
+      <div class="card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <h2 class="card-title">📋 历史记录</h2>
+          <button class="btn btn-danger btn-small" onclick="clearAllRecords()">清空全部</button>
+        </div>
+        <div class="records-section" id="recordsList">
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            <p>暂无记录</p>
+            <p style="font-size: 0.85rem;">输入身高体重并保存，查看历史记录</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let currentBMI = null;
+    let records = [];
+    let chartContext = null;
+
+    function initChart() {
+      const canvas = document.getElementById('trendChart');
+      chartContext = canvas.getContext('2d');
+      canvas.width = canvas.offsetWidth * 2;
+      canvas.height = canvas.offsetHeight * 2;
+      chartContext.scale(2, 2);
+    }
+
+    function calculateBMI() {
+      const heightInput = document.getElementById('height');
+      const weightInput = document.getElementById('weight');
+      const height = parseFloat(heightInput.value);
+      const weight = parseFloat(weightInput.value);
+
+      clearMessages();
+
+      if (isNaN(height) || isNaN(weight)) {
+        showError('请输入有效的数字');
+        heightInput.classList.add('error');
+        weightInput.classList.add('error');
+        return;
+      }
+
+      heightInput.classList.remove('error');
+      weightInput.classList.remove('error');
+
+      fetch('/api/bmi/calculate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ height, weight })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) {
+          showError(data.error);
+          return;
+        }
+        currentBMI = data;
+        updateGauge(data.bmi);
+        updateBMIDisplay(data);
+      })
+      .catch(err => {
+        showError('计算失败: ' + err.message);
+      });
+    }
+
+    function saveRecord() {
+      if (!currentBMI) {
+        showError('请先计算BMI');
+        return;
+      }
+
+      fetch('/api/bmi/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+          height: currentBMI.height, 
+          weight: currentBMI.weight 
+        })
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) {
+          showError(data.error);
+          return;
+        }
+        
+        const saveBtn = document.getElementById('saveBtn');
+        saveBtn.classList.add('saved');
+        setTimeout(() => saveBtn.classList.remove('saved'), 500);
+        
+        showSuccess('保存成功！');
+        loadRecords();
+      })
+      .catch(err => {
+        showError('保存失败: ' + err.message);
+      });
+    }
+
+    function loadRecords() {
+      fetch('/api/bmi/records')
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) {
+          showError(data.error);
+          return;
+        }
+        records = data;
+        renderRecords();
+        renderChart();
+      })
+      .catch(err => {
+        console.error('加载记录失败:', err);
+      });
+    }
+
+    function clearAllRecords() {
+      if (!confirm('确定要清空所有记录吗？')) return;
+      
+      fetch('/api/bmi/records', { method: 'DELETE' })
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) {
+          showError(data.error);
+          return;
+        }
+        records = [];
+        renderRecords();
+        renderChart();
+        showSuccess('清空成功');
+      })
+      .catch(err => {
+        showError('清空失败: ' + err.message);
+      });
+    }
+
+    function deleteRecord(id) {
+      fetch(`/api/bmi/records/${id}`, { method: 'DELETE' })
+      .then(res => res.json())
+      .then(data => {
+        if (data.error) {
+          showError(data.error);
+          return;
+        }
+        loadRecords();
+      })
+      .catch(err => {
+        showError('删除失败: ' + err.message);
+      });
+    }
+
+    function updateGauge(bmi) {
+      const needle = document.getElementById('needle');
+      let angle = -135;
+      
+      if (bmi < 18.5) {
+        angle = -135 + (bmi / 18.5) * 45;
+      } else if (bmi < 24) {
+        angle = -90 + ((bmi - 18.5) / 5.5) * 45;
+      } else if (bmi < 28) {
+        angle = -45 + ((bmi - 24) / 4) * 45;
+      } else {
+        const excess = Math.min((bmi - 28) / 20, 1);
+        angle = 0 + excess * 45;
+      }
+      
+      needle.style.transform = `translateX(-50%) rotate(${angle}deg)`;
+    }
+
+    function updateBMIDisplay(data) {
+      const bmiValue = document.getElementById('bmiValue');
+      const bmiGrade = document.getElementById('bmiGrade');
+      
+      let currentValue = parseFloat(bmiValue.textContent) || 0;
+      const targetValue = data.bmi;
+      const duration = 800;
+      const startTime = performance.now();
+      
+      function animate(currentTime) {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / duration, 1);
+        
+        const eased = 1 - Math.pow(1 - progress, 3);
+        const value = currentValue + (targetValue - currentValue) * eased;
+        
+        bmiValue.textContent = value.toFixed(1);
+        
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        }
+      }
+      
+      requestAnimationFrame(animate);
+      
+      const gradeColors = {
+        '偏瘦': 'grade-underweight',
+        '正常': 'grade-normal',
+        '超重': 'grade-overweight',
+        '肥胖': 'grade-obese'
+      };
+      
+      Object.keys(gradeColors).forEach(cls => {
+        bmiGrade.classList.remove(cls);
+      });
+      
+      bmiGrade.classList.add(gradeColors[data.grade]);
+      bmiGrade.textContent = data.grade;
+      
+      bmiValue.style.color = getGradeColor(data.grade);
+    }
+
+    function getGradeColor(grade) {
+      const colors = {
+        '偏瘦': '#3498db',
+        '正常': '#2ecc71',
+        '超重': '#f1c40f',
+        '肥胖': '#e74c3c'
+      };
+      return colors[grade] || '#333';
+    }
+
+    function renderRecords() {
+      const container = document.getElementById('recordsList');
+      
+      if (records.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+              <polyline points="10 9 9 9 8 9"></polyline>
+            </svg>
+            <p>暂无记录</p>
+            <p style="font-size: 0.85rem;">输入身高体重并保存，查看历史记录</p>
+          </div>
+        `;
+        return;
+      }
+      
+      container.innerHTML = records.map(record => `
+        <div class="record-item">
+          <div class="record-info">
+            <span class="record-bmi" style="color: ${getGradeColor(record.grade)}">
+              ${record.bmi}
+            </span>
+            <span class="record-meta">
+              ${record.height}cm / ${record.weight}kg · ${record.grade} · ${formatDate(record.created_at)}
+            </span>
+          </div>
+          <div class="record-actions">
+            <button class="btn btn-danger btn-small" onclick="deleteRecord(${record.id})">删除</button>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function formatDate(dateStr) {
+      const date = new Date(dateStr);
+      return date.toLocaleString('zh-CN', {
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    }
+
+    function renderChart() {
+      if (!chartContext || records.length === 0) {
+        chartContext?.clearRect(0, 0, chartContext.canvas.width, chartContext.canvas.height);
+        return;
+      }
+      
+      const canvas = chartContext.canvas;
+      const width = canvas.width / 2;
+      const height = canvas.height / 2;
+      const padding = { top: 20, right: 20, bottom: 30, left: 40 };
+      const chartWidth = width - padding.left - padding.right;
+      const chartHeight = height - padding.top - padding.bottom;
+      
+      chartContext.clearRect(0, 0, canvas.width, canvas.height);
+      
+      const reversedRecords = [...records].reverse();
+      const bmiValues = reversedRecords.map(r => r.bmi);
+      const grades = reversedRecords.map(r => r.grade);
+      const maxBmi = Math.max(...bmiValues, 40);
+      const minBmi = Math.min(...bmiValues, 10);
+      const rangeBmi = maxBmi - minBmi || 1;
+      
+      chartContext.strokeStyle = '#eee';
+      chartContext.lineWidth = 1;
+      for (let i = 0; i <= 4; i++) {
+        const y = padding.top + (chartHeight / 4) * i;
+        chartContext.beginPath();
+        chartContext.moveTo(padding.left, y);
+        chartContext.lineTo(width - padding.right, y);
+        chartContext.stroke();
+        
+        const value = maxBmi - (rangeBmi / 4) * i;
+        chartContext.fillStyle = '#666';
+        chartContext.font = '10px sans-serif';
+        chartContext.textAlign = 'right';
+        chartContext.fillText(value.toFixed(0), padding.left - 5, y + 4);
+      }
+      
+      const gradient = chartContext.createLinearGradient(0, padding.top, 0, height - padding.bottom);
+      gradient.addColorStop(0, '#667eea');
+      gradient.addColorStop(1, '#764ba2');
+      
+      if (bmiValues.length > 1) {
+        const stepX = chartWidth / (bmiValues.length - 1);
+        
+        chartContext.beginPath();
+        chartContext.strokeStyle = gradient;
+        chartContext.lineWidth = 3;
+        chartContext.lineCap = 'round';
+        chartContext.lineJoin = 'round';
+        
+        const duration = 1000;
+        const startTime = performance.now();
+        
+        function drawPath(currentTime) {
+          const elapsed = currentTime - startTime;
+          const progress = Math.min(elapsed / duration, 1);
+          const pointsToDraw = Math.ceil(bmiValues.length * progress);
+          
+          chartContext.clearRect(padding.left, padding.top, chartWidth, chartHeight);
+          
+          if (pointsToDraw > 0) {
+            chartContext.beginPath();
+            chartContext.strokeStyle = gradient;
+            chartContext.lineWidth = 3;
+            
+            const x0 = padding.left;
+            const y0 = padding.top + chartHeight - ((bmiValues[0] - minBmi) / rangeBmi) * chartHeight;
+            chartContext.moveTo(x0, y0);
+            
+            for (let i = 1; i < pointsToDraw; i++) {
+              const x = padding.left + i * stepX;
+              const y = padding.top + chartHeight - ((bmiValues[i] - minBmi) / rangeBmi) * chartHeight;
+              chartContext.lineTo(x, y);
+            }
+            chartContext.stroke();
+            
+            for (let i = 0; i < pointsToDraw; i++) {
+              const x = padding.left + i * stepX;
+              const y = padding.top + chartHeight - ((bmiValues[i] - minBmi) / rangeBmi) * chartHeight;
+              
+              chartContext.beginPath();
+              chartContext.fillStyle = '#fff';
+              chartContext.arc(x, y, 5, 0, Math.PI * 2);
+              chartContext.fill();
+              
+              chartContext.beginPath();
+              chartContext.fillStyle = getGradeColor(grades[i]);
+              chartContext.arc(x, y, 3, 0, Math.PI * 2);
+              chartContext.fill();
+            }
+          }
+          
+          if (progress < 1) {
+            requestAnimationFrame(drawPath);
+          }
+        }
+        
+        requestAnimationFrame(drawPath);
+      } else {
+        const x = padding.left;
+        const y = padding.top + chartHeight - ((bmiValues[0] - minBmi) / rangeBmi) * chartHeight;
+        
+        chartContext.beginPath();
+        chartContext.fillStyle = '#fff';
+        chartContext.arc(x, y, 6, 0, Math.PI * 2);
+        chartContext.fill();
+        
+        chartContext.beginPath();
+        chartContext.fillStyle = getGradeColor(records[0].grade);
+        chartContext.arc(x, y, 4, 0, Math.PI * 2);
+        chartContext.fill();
+      }
+      
+      chartContext.fillStyle = '#666';
+      chartContext.font = '10px sans-serif';
+      chartContext.textAlign = 'center';
+      chartContext.fillText('记录', width / 2, height - 10);
+    }
+
+    function loadPreset(type) {
+      const heightInput = document.getElementById('height');
+      const weightInput = document.getElementById('weight');
+      
+      switch(type) {
+        case 'normal':
+          heightInput.value = '175';
+          weightInput.value = '70';
+          break;
+        case 'extreme':
+          heightInput.value = '160';
+          weightInput.value = '120';
+          break;
+        case 'zero':
+          heightInput.value = '0';
+          weightInput.value = '70';
+          break;
+        case 'trend':
+          generateTrendData();
+          return;
+      }
+      calculateBMI();
+    }
+
+    async function generateTrendData() {
+      const months = 12;
+      let currentWeight = 80;
+      
+      for (let i = 0; i < months; i++) {
+        const height = 175;
+        currentWeight += (Math.random() - 0.5) * 4;
+        currentWeight = Math.max(50, Math.min(120, currentWeight));
+        
+        await fetch('/api/bmi/save', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ height, weight: parseFloat(currentWeight.toFixed(1)) })
+        });
+      }
+      
+      showSuccess('已生成12个月的趋势数据');
+      loadRecords();
+    }
+
+    function showError(message) {
+      const container = document.getElementById('message');
+      container.innerHTML = `<div class="error-message">❌ ${message}</div>`;
+    }
+
+    function showSuccess(message) {
+      const container = document.getElementById('message');
+      container.innerHTML = `<div class="success-message">✅ ${message}</div>`;
+      setTimeout(clearMessages, 3000);
+    }
+
+    function clearMessages() {
+      document.getElementById('message').innerHTML = '';
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initChart();
+      loadRecords();
+    });
+  </script>
+</body>
+</html>
