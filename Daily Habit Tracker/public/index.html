@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>习惯养成追踪面板</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="header">
+    <h1>🔥 习惯养成追踪面板</h1>
+    <div class="scenario-buttons">
+      <button onclick="loadScenario('perfect-year')" class="scenario-btn perfect">完美一年</button>
+      <button onclick="loadScenario('intermittent')" class="scenario-btn intermittent">断断续续</button>
+      <button onclick="loadScenario('first-day')" class="scenario-btn first-day">第一天</button>
+      <button onclick="loadScenario('leap-year')" class="scenario-btn leap-year">跨越闰年</button>
+      <button onclick="loadScenario('empty')" class="scenario-btn empty">清空数据</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="habits-section">
+      <div class="section-header">
+        <h2>我的习惯</h2>
+        <button onclick="showAddHabitModal()" class="add-btn">+ 添加习惯</button>
+      </div>
+      <div id="habits-list" class="habits-list"></div>
+      <div id="empty-state" class="empty-state">
+        <div class="empty-icon">📋</div>
+        <p>还没有习惯，点击上方按钮添加</p>
+        <p>或选择预设场景体验效果</p>
+      </div>
+    </div>
+
+    <div class="calendar-section" id="calendar-section">
+      <div class="section-header">
+        <h2>📅 打卡日历</h2>
+        <div class="calendar-nav">
+          <button onclick="prevMonth()">←</button>
+          <span id="current-month">2024年1月</span>
+          <button onclick="nextMonth()">→</button>
+        </div>
+      </div>
+      <div id="calendar-grid" class="calendar-grid"></div>
+    </div>
+  </div>
+
+  <div id="add-habit-modal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeAddHabitModal()">&times;</span>
+      <h3>添加新习惯</h3>
+      <input type="text" id="habit-name" placeholder="习惯名称" maxlength="20">
+      <div class="color-picker">
+        <span>选择颜色:</span>
+        <div class="colors">
+          <button onclick="selectColor('#4CAF50')" class="color-btn" style="background: #4CAF50"></button>
+          <button onclick="selectColor('#FF6B6B')" class="color-btn" style="background: #FF6B6B"></button>
+          <button onclick="selectColor('#4ECDC4')" class="color-btn" style="background: #4ECDC4"></button>
+          <button onclick="selectColor('#9B59B6')" class="color-btn" style="background: #9B59B6"></button>
+          <button onclick="selectColor('#FFD700')" class="color-btn" style="background: #FFD700"></button>
+          <button onclick="selectColor('#3498DB')" class="color-btn" style="background: #3498DB"></button>
+        </div>
+      </div>
+      <button onclick="addHabit()" class="submit-btn">确认添加</button>
+    </div>
+  </div>
+
+  <div id="celebration-modal" class="celebration-modal">
+    <div class="celebration-content">
+      <div class="fireworks"></div>
+      <div class="confetti"></div>
+      <h2>🎉 恭喜达成里程碑！</h2>
+      <p id="milestone-message"></p>
+      <button onclick="closeCelebrationModal()" class="close-btn">太棒了！</button>
+    </div>
+  </div>
+
+  <div id="error-toast" class="toast error">
+    <span>❌ 发生错误</span>
+  </div>
+
+  <div id="success-toast" class="toast success">
+    <span>✅ 操作成功</span>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
