@@ -1,0 +1,30 @@
+[
+  {
+    "id": 1,
+    "name": "狂飙",
+    "totalEpisodes": 39,
+    "currentEpisode": 10,
+    "status": "watching"
+  },
+  {
+    "id": 2,
+    "name": "海贼王",
+    "totalEpisodes": 0,
+    "currentEpisode": 1083,
+    "status": "ongoing"
+  },
+  {
+    "id": 3,
+    "name": "三体",
+    "totalEpisodes": 30,
+    "currentEpisode": 44,
+    "status": "completed"
+  },
+  {
+    "id": 4,
+    "name": "开端",
+    "totalEpisodes": 15,
+    "currentEpisode": 0,
+    "status": "watching"
+  }
+]
