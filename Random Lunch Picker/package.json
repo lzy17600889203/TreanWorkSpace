@@ -1,0 +1,16 @@
+{
+  "name": "random-lunch-picker",
+  "version": "1.0.0",
+  "description": "随机午餐选择器 - 解决选择困难症",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "keywords": ["lunch", "random", "picker", "express"],
+  "author": "",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2",
+    "cors": "^2.8.5"
+  }
+}
