@@ -1,0 +1,33 @@
+.scene-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: 300px;
+}
+
+.scene-btn {
+  background: rgba(20, 30, 50, 0.8);
+  border: 1px solid rgba(100, 200, 255, 0.2);
+  border-radius: 8px;
+  padding: 12px 16px;
+  color: #aaa;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.3s ease;
+}
+
+.scene-btn:hover {
+  background: rgba(40, 60, 100, 0.8);
+  border-color: rgba(100, 200, 255, 0.4);
+  color: white;
+}
+
+.scene-btn.active {
+  background: linear-gradient(135deg, rgba(0, 212, 255, 0.2), rgba(123, 47, 247, 0.2));
+  border-color: rgba(0, 212, 255, 0.6);
+  color: white;
+  box-shadow: 0 0 20px rgba(0, 212, 255, 0.2);
+}
