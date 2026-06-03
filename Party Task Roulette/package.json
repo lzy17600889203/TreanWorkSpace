@@ -1,0 +1,16 @@
+{
+  "name": "party-task-roulette",
+  "version": "1.0.0",
+  "description": "线下聚会活跃气氛工具 - 任务抽奖系统",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["party", "game", "task", "roulette"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2"
+  }
+}
