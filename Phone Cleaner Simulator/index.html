@@ -1,0 +1,782 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>手机清理模拟器 - 超级解压！</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            overflow-x: hidden;
+        }
+
+        #root {
+            width: 100%;
+            max-width: 480px;
+        }
+
+        .app-container {
+            background: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+            border-radius: 32px;
+            padding: 40px 30px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            box-shadow: 0 25px 80px rgba(0, 0, 0, 0.5);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .header h1 {
+            color: #ffffff;
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 14px;
+        }
+
+        .memory-display {
+            text-align: center;
+            margin-bottom: 35px;
+            position: relative;
+        }
+
+        .memory-circle {
+            width: 180px;
+            height: 180px;
+            margin: 0 auto;
+            position: relative;
+        }
+
+        .circle-bg {
+            fill: none;
+            stroke: rgba(255, 255, 255, 0.1);
+            stroke-width: 14;
+        }
+
+        .circle-progress {
+            fill: none;
+            stroke-width: 14;
+            stroke-linecap: round;
+            transform: rotate(-90deg);
+            transform-origin: center;
+            transition: stroke-dashoffset 0.3s ease, stroke 0.3s ease;
+        }
+
+        .memory-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+        }
+
+        .memory-number {
+            font-size: 48px;
+            font-weight: 800;
+            color: #ffffff;
+            line-height: 1;
+            text-shadow: 0 0 30px rgba(0, 255, 198, 0.5);
+        }
+
+        .memory-label {
+            font-size: 14px;
+            color: rgba(255, 255, 255, 0.7);
+            margin-top: 8px;
+        }
+
+        .memory-status {
+            margin-top: 20px;
+            font-size: 16px;
+            font-weight: 600;
+            padding: 8px 20px;
+            border-radius: 20px;
+            display: inline-block;
+            transition: all 0.3s ease;
+        }
+
+        .status-warning {
+            background: rgba(255, 87, 87, 0.2);
+            color: #ff5757;
+            border: 1px solid rgba(255, 87, 87, 0.4);
+        }
+
+        .status-good {
+            background: rgba(0, 255, 198, 0.2);
+            color: #00ffc6;
+            border: 1px solid rgba(0, 255, 198, 0.4);
+        }
+
+        .file-list-container {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 20px;
+            padding: 20px;
+            margin-bottom: 30px;
+            height: 200px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .file-list-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5), transparent);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .file-list-container::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40px;
+            background: linear-gradient(to top, rgba(0, 0, 0, 0.5), transparent);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .file-scroll {
+            animation: scrollUp 15s linear infinite;
+        }
+
+        .file-scroll.paused {
+            animation-play-state: paused;
+        }
+
+        @keyframes scrollUp {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(-50%);
+            }
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            transition: all 0.3s ease;
+        }
+
+        .file-item.cleaning {
+            animation: fileClean 0.5s ease forwards;
+        }
+
+        @keyframes fileClean {
+            0% {
+                opacity: 1;
+                transform: translateX(0) scale(1);
+            }
+            50% {
+                opacity: 0.5;
+                transform: translateX(20px) scale(0.95);
+            }
+            100% {
+                opacity: 0;
+                transform: translateX(50px) scale(0.8);
+            }
+        }
+
+        .file-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 14px;
+            font-size: 18px;
+        }
+
+        .file-info {
+            flex: 1;
+        }
+
+        .file-name {
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 500;
+            margin-bottom: 3px;
+        }
+
+        .file-size {
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 12px;
+        }
+
+        .progress-section {
+            margin-bottom: 30px;
+            opacity: 0;
+            max-height: 0;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .progress-section.visible {
+            opacity: 1;
+            max-height: 100px;
+        }
+
+        .progress-label {
+            display: flex;
+            justify-content: space-between;
+            color: #ffffff;
+            font-size: 14px;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .progress-bar {
+            height: 16px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 10px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00d2ff, #3a7bd5, #00ffc6);
+            border-radius: 10px;
+            transition: width 0.1s linear;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .progress-fill::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            animation: shimmer 1.5s infinite;
+        }
+
+        @keyframes shimmer {
+            0% {
+                transform: translateX(-100%);
+            }
+            100% {
+                transform: translateX(100%);
+            }
+        }
+
+        .clean-button {
+            width: 100%;
+            padding: 20px;
+            font-size: 20px;
+            font-weight: 700;
+            color: #ffffff;
+            background: linear-gradient(135deg, #00d2ff 0%, #3a7bd5 50%, #00ffc6 100%);
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 30px rgba(0, 210, 255, 0.4);
+        }
+
+        .clean-button:hover:not(:disabled) {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 40px rgba(0, 210, 255, 0.5);
+        }
+
+        .clean-button:active:not(:disabled) {
+            transform: translateY(-1px);
+        }
+
+        .clean-button:disabled {
+            opacity: 0.8;
+            cursor: not-allowed;
+        }
+
+        .clean-button.cleaning {
+            animation: pulse 1s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                box-shadow: 0 10px 30px rgba(0, 210, 255, 0.4);
+            }
+            50% {
+                box-shadow: 0 10px 50px rgba(0, 255, 198, 0.6);
+            }
+        }
+
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            border-radius: 30px;
+            padding: 50px 40px;
+            text-align: center;
+            border: 2px solid rgba(0, 255, 198, 0.3);
+            box-shadow: 0 20px 60px rgba(0, 255, 198, 0.3);
+            transform: scale(0.8);
+            transition: transform 0.3s ease;
+            max-width: 90%;
+        }
+
+        .modal-overlay.visible .modal-content {
+            transform: scale(1);
+        }
+
+        .modal-icon {
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #00ffc6, #00d2ff);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 25px;
+            font-size: 50px;
+            animation: bounce 0.5s ease;
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.2);
+            }
+        }
+
+        .modal-title {
+            font-size: 28px;
+            font-weight: 800;
+            color: #ffffff;
+            margin-bottom: 10px;
+        }
+
+        .modal-text {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 16px;
+            margin-bottom: 30px;
+        }
+
+        .modal-button {
+            padding: 15px 50px;
+            font-size: 18px;
+            font-weight: 700;
+            color: #ffffff;
+            background: linear-gradient(135deg, #00ffc6, #00d2ff);
+            border: none;
+            border-radius: 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .modal-button:hover {
+            transform: scale(1.05);
+        }
+
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            pointer-events: none;
+            z-index: 999;
+        }
+
+        .particle {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        @keyframes particleExplode {
+            0% {
+                transform: translate(0, 0) scale(1);
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef, useCallback } = React;
+
+        const cacheFiles = [
+            { name: 'cache_temp_01.log', size: '24.5 MB', icon: '📄', color: '#ff6b6b' },
+            { name: 'image_cache_2024.jpg', size: '156 MB', icon: '🖼️', color: '#4ecdc4' },
+            { name: 'video_buffer_003.mp4', size: '512 MB', icon: '🎬', color: '#45b7d1' },
+            { name: 'social_feed.json', size: '8.2 MB', icon: '📱', color: '#96ceb4' },
+            { name: 'app_crash_dump.dmp', size: '45 MB', icon: '⚠️', color: '#ffeaa7' },
+            { name: 'temp_download.zip', size: '234 MB', icon: '📦', color: '#dfe6e9' },
+            { name: 'browser_history.db', size: '32 MB', icon: '🌐', color: '#a29bfe' },
+            { name: 'thumbnail_cache_05.png', size: '12 MB', icon: '🖼️', color: '#fd79a8' },
+            { name: 'log_file_202403.txt', size: '5.6 MB', icon: '📝', color: '#00b894' },
+            { name: 'ads_cache.data', size: '78 MB', icon: '🎯', color: '#e17055' },
+            { name: 'push_notification.log', size: '3.4 MB', icon: '🔔', color: '#0984e3' },
+            { name: 'analytics_event.json', size: '18 MB', icon: '📊', color: '#6c5ce7' },
+            { name: 'temp_audio_clip.mp3', size: '42 MB', icon: '🎵', color: '#e84393' },
+            { name: 'map_tiles_cache.dat', size: '189 MB', icon: '🗺️', color: '#00cec9' },
+            { name: 'game_saves.bak', size: '67 MB', icon: '🎮', color: '#fdcb6e' },
+        ];
+
+        const doubleFiles = [...cacheFiles, ...cacheFiles];
+
+        // 颜色渐变函数：从红色到绿色
+        function lerpColor(usage) {
+            // usage: 0-100
+            // 100% → 红色 (#ff5757)
+            // 0% → 绿色 (#00ffc6)
+            const t = 1 - (usage / 100); // 反转比例
+            const r1 = 255, g1 = 87, b1 = 87; // 红色
+            const r2 = 0, g2 = 255, b2 = 198; // 绿色
+            
+            const r = Math.round(r1 + (r2 - r1) * t);
+            const g = Math.round(g1 + (g2 - g1) * t);
+            const b = Math.round(b1 + (b2 - b1) * t);
+            
+            return `rgb(${r}, ${g}, ${b})`;
+        }
+
+        function ParticleExplosion({ active }) {
+            const [particles, setParticles] = useState([]);
+
+            useEffect(() => {
+                if (!active) return;
+
+                const colors = ['#00ffc6', '#00d2ff', '#3a7bd5', '#ff5757', '#ffd93d'];
+                const newParticles = [];
+
+                for (let i = 0; i < 50; i++) {
+                    const angle = (Math.PI * 2 * i) / 50;
+                    const velocity = 100 + Math.random() * 200;
+                    const vx = Math.cos(angle) * velocity;
+                    const vy = Math.sin(angle) * velocity;
+
+                    newParticles.push({
+                        id: i,
+                        x: window.innerWidth / 2,
+                        y: window.innerHeight / 2,
+                        vx,
+                        vy,
+                        color: colors[Math.floor(Math.random() * colors.length)],
+                        size: 5 + Math.random() * 10,
+                        life: 1,
+                    });
+                }
+
+                setParticles(newParticles);
+
+                const interval = setInterval(() => {
+                    setParticles(prev => 
+                        prev.map(p => ({
+                            ...p,
+                            x: p.x + p.vx * 0.02,
+                            y: p.y + p.vy * 0.02,
+                            life: p.life - 0.02,
+                        })).filter(p => p.life > 0)
+                    );
+                }, 16);
+
+                return () => clearInterval(interval);
+            }, [active]);
+
+            return (
+                <div className="particles">
+                    {particles.map(p => (
+                        <div
+                            key={p.id}
+                            className="particle"
+                            style={{
+                                left: p.x,
+                                top: p.y,
+                                width: p.size,
+                                height: p.size,
+                                background: p.color,
+                                opacity: p.life,
+                            }}
+                        />
+                    ))}
+                </div>
+            );
+        }
+
+        function MemoryDisplay({ usage, isCleaning }) {
+            const circumference = 2 * Math.PI * 75;
+            const offset = circumference - (usage / 100) * circumference;
+            const strokeColor = lerpColor(usage);
+
+            return (
+                <div className="memory-display">
+                    <div className="memory-circle">
+                        <svg width="180" height="180" viewBox="0 0 180 180">
+                            <circle
+                                className="circle-bg"
+                                cx="90"
+                                cy="90"
+                                r="75"
+                            />
+                            <circle
+                                className="circle-progress"
+                                cx="90"
+                                cy="90"
+                                r="75"
+                                stroke={strokeColor}
+                                strokeDasharray={circumference}
+                                strokeDashoffset={offset}
+                                style={{ filter: `drop-shadow(0 0 15px ${strokeColor})` }}
+                            />
+                        </svg>
+                        <div className="memory-text">
+                            <div className="memory-number" style={{ textShadow: `0 0 30px ${strokeColor}` }}>{usage}%</div>
+                            <div className="memory-label">内存占用</div>
+                        </div>
+                    </div>
+                    <div 
+                        className="memory-status"
+                        style={{
+                            background: `${strokeColor}20`,
+                            color: strokeColor,
+                            borderColor: `${strokeColor}60`
+                        }}
+                    >
+                        {usage > 50 ? '⚠️ 需要清理' : '✅ 状态良好'}
+                    </div>
+                </div>
+            );
+        }
+
+        function CacheFileList({ files, cleaning, cleaningFiles }) {
+            return (
+                <div className="file-list-container">
+                    <div className={`file-scroll ${cleaning ? 'paused' : ''}`}>
+                        {files.map((file, index) => (
+                            <div
+                                key={`${file.name}-${index}`}
+                                className={`file-item ${cleaningFiles.includes(file.name) ? 'cleaning' : ''}`}
+                            >
+                                <div
+                                    className="file-icon"
+                                    style={{ background: `${file.color}30` }}
+                                >
+                                    {file.icon}
+                                </div>
+                                <div className="file-info">
+                                    <div className="file-name">{file.name}</div>
+                                    <div className="file-size">{file.size}</div>
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            );
+        }
+
+        function ProgressBar({ progress, visible }) {
+            return (
+                <div className={`progress-section ${visible ? 'visible' : ''}`}>
+                    <div className="progress-label">
+                        <span>正在清理垃圾文件...</span>
+                        <span>{Math.round(progress)}%</span>
+                    </div>
+                    <div className="progress-bar">
+                        <div
+                            className="progress-fill"
+                            style={{ width: `${progress}%` }}
+                        />
+                    </div>
+                </div>
+            );
+        }
+
+        function CleanButton({ onClick, disabled, cleaning }) {
+            return (
+                <button
+                    className={`clean-button ${cleaning ? 'cleaning' : ''}`}
+                    onClick={onClick}
+                    disabled={disabled}
+                >
+                    {cleaning ? '🗑️ 清理中...' : '✨ 一键清理'}
+                </button>
+            );
+        }
+
+        function CleanCompleteModal({ visible, onClose, cleanedSize }) {
+            return (
+                <div className={`modal-overlay ${visible ? 'visible' : ''}`}>
+                    <div className="modal-content">
+                        <div className="modal-icon">🎉</div>
+                        <div className="modal-title">清理完成！</div>
+                        <div className="modal-text">
+                            成功释放约 {cleanedSize} 存储空间！
+                        </div>
+                        <button className="modal-button" onClick={onClose}>
+                            太棒了！
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        function App() {
+            const [memoryUsage, setMemoryUsage] = useState(85);
+            const [isCleaning, setIsCleaning] = useState(false);
+            const [progress, setProgress] = useState(0);
+            const [showModal, setShowModal] = useState(false);
+            const [showParticles, setShowParticles] = useState(false);
+            const [cleaningFiles, setCleaningFiles] = useState([]);
+            const [resetKey, setResetKey] = useState(0);
+
+            const handleClean = useCallback(() => {
+                if (isCleaning) return;
+
+                setIsCleaning(true);
+                setProgress(0);
+                setCleaningFiles([]);
+
+                let currentProgress = 0;
+                let currentMemory = 85;
+                let fileIndex = 0;
+
+                const progressInterval = setInterval(() => {
+                    currentProgress += Math.random() * 8 + 2;
+                    if (currentProgress > 100) currentProgress = 100;
+                    setProgress(currentProgress);
+
+                    if (currentMemory > 10) {
+                        currentMemory -= Math.random() * 3 + 0.5;
+                        if (currentMemory < 10) currentMemory = 10;
+                        setMemoryUsage(Math.round(currentMemory));
+                    }
+
+                    if (fileIndex < cacheFiles.length && Math.random() > 0.5) {
+                        setCleaningFiles(prev => [...prev, cacheFiles[fileIndex].name]);
+                        fileIndex++;
+                    }
+
+                    if (currentProgress >= 100) {
+                        clearInterval(progressInterval);
+                        
+                        setTimeout(() => {
+                            setShowParticles(true);
+                            setTimeout(() => setShowParticles(false), 1000);
+                            
+                            setTimeout(() => {
+                                setIsCleaning(false);
+                                setShowModal(true);
+                            }, 500);
+                        }, 300);
+                    }
+                }, 50);
+            }, [isCleaning]);
+
+            const handleCloseModal = useCallback(() => {
+                setShowModal(false);
+                setMemoryUsage(85);
+                setProgress(0);
+                setCleaningFiles([]);
+                setResetKey(prev => prev + 1);
+            }, []);
+
+            return (
+                <div className="app-container">
+                    <ParticleExplosion active={showParticles} />
+                    
+                    <div className="header">
+                        <h1>📱 手机清理大师</h1>
+                        <p>一键清理，超级解压！</p>
+                    </div>
+
+                    <MemoryDisplay usage={memoryUsage} isCleaning={isCleaning} />
+
+                    <div key={resetKey}>
+                        <CacheFileList
+                            files={doubleFiles}
+                            cleaning={isCleaning}
+                            cleaningFiles={cleaningFiles}
+                        />
+                    </div>
+
+                    <ProgressBar progress={progress} visible={isCleaning} />
+
+                    <CleanButton
+                        onClick={handleClean}
+                        disabled={isCleaning}
+                        cleaning={isCleaning}
+                    />
+
+                    <CleanCompleteModal
+                        visible={showModal}
+                        onClose={handleCloseModal}
+                        cleanedSize="1.5 GB"
+                    />
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
