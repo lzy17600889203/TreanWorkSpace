@@ -1,0 +1,13 @@
+{
+  "name": "warehouse-heatmap",
+  "version": "1.0.0",
+  "description": "3D Warehouse Visualization Tool",
+  "scripts": {
+    "dev:server": "cd server && npm run dev",
+    "dev:client": "cd client && npm run dev",
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install"
+  },
+  "keywords": ["warehouse", "3d", "visualization"],
+  "author": "",
+  "license": "MIT"
+}
