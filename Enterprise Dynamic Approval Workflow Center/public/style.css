@@ -1,0 +1,503 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+}
+
+header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 24px 32px;
+}
+
+header h1 {
+    font-size: 28px;
+    margin-bottom: 16px;
+}
+
+nav {
+    display: flex;
+    gap: 12px;
+}
+
+.nav-btn {
+    padding: 10px 24px;
+    border: none;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.nav-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+}
+
+.nav-btn.active {
+    background: white;
+    color: #667eea;
+    font-weight: 600;
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.editor-container {
+    display: flex;
+    height: 700px;
+}
+
+.sidebar {
+    width: 280px;
+    background: #f7f9fc;
+    border-right: 1px solid #e1e8ed;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar h3 {
+    color: #1a1a2e;
+    margin-bottom: 20px;
+    font-size: 18px;
+}
+
+.node-library {
+    flex: 1;
+    overflow-y: auto;
+}
+
+.node-template {
+    background: white;
+    border: 2px solid #e1e8ed;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    cursor: grab;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.3s;
+}
+
+.node-template:hover {
+    border-color: #667eea;
+    transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.2);
+}
+
+.node-template:active {
+    cursor: grabbing;
+}
+
+.node-icon {
+    font-size: 32px;
+}
+
+.node-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1a1a2e;
+}
+
+.actions {
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid #e1e8ed;
+}
+
+.actions input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e1e8ed;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    font-size: 14px;
+}
+
+.btn {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s;
+    margin-bottom: 8px;
+}
+
+.btn.primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn.primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+}
+
+.btn.danger {
+    background: #ff6b6b;
+    color: white;
+}
+
+.btn.danger:hover {
+    background: #ee5a5a;
+}
+
+.canvas-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.canvas-toolbar {
+    padding: 16px 24px;
+    background: #f7f9fc;
+    border-bottom: 1px solid #e1e8ed;
+    color: #666;
+    font-size: 14px;
+}
+
+.canvas {
+    flex: 1;
+    background: #fafbfc;
+    cursor: crosshair;
+}
+
+.workflow-node {
+    cursor: move;
+}
+
+.workflow-node.selected .node-body {
+    stroke: #667eea;
+    stroke-width: 3;
+}
+
+.node-port {
+    cursor: crosshair;
+}
+
+.connection-line {
+    fill: none;
+    stroke: #667eea;
+    stroke-width: 3;
+}
+
+.applications-container {
+    padding: 32px;
+}
+
+.toolbar {
+    margin-bottom: 24px;
+}
+
+.applications-list {
+    display: grid;
+    gap: 16px;
+}
+
+.application-card {
+    background: white;
+    border: 1px solid #e1e8ed;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.application-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+
+.application-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1a1a2e;
+}
+
+.application-status {
+    padding: 6px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.status-pending {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.status-approved {
+    background: #d4edda;
+    color: #155724;
+}
+
+.status-rejected {
+    background: #f8d7da;
+    color: #721c24;
+}
+
+.status-withdrawn {
+    background: #e2e3e5;
+    color: #383d41;
+}
+
+.application-meta {
+    display: flex;
+    gap: 24px;
+    color: #666;
+    font-size: 14px;
+    margin-bottom: 16px;
+}
+
+.application-actions {
+    display: flex;
+    gap: 12px;
+}
+
+.application-actions .btn {
+    width: auto;
+    padding: 8px 20px;
+}
+
+.demo-container {
+    padding: 32px;
+}
+
+.demo-container h2 {
+    color: #1a1a2e;
+    margin-bottom: 24px;
+}
+
+.demo-buttons {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 32px;
+}
+
+.demo-btn {
+    padding: 12px 24px;
+    border: 2px solid #667eea;
+    background: white;
+    color: #667eea;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 600;
+    transition: all 0.3s;
+}
+
+.demo-btn:hover {
+    background: #667eea;
+    color: white;
+}
+
+.demo-area {
+    min-height: 400px;
+}
+
+.modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal.hidden {
+    display: none;
+}
+
+.modal-content {
+    background: white;
+    border-radius: 16px;
+    padding: 32px;
+    max-width: 600px;
+    width: 90%;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+}
+
+.close {
+    position: absolute;
+    top: 20px;
+    right: 24px;
+    font-size: 28px;
+    cursor: pointer;
+    color: #999;
+}
+
+.close:hover {
+    color: #333;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #1a1a2e;
+}
+
+.form-group input,
+.form-group textarea,
+.form-group select {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e1e8ed;
+    border-radius: 8px;
+    font-size: 14px;
+}
+
+.demo-perfect .progress-bar {
+    background: linear-gradient(90deg, #48bb78 0%, #38a169 100%);
+    height: 8px;
+    border-radius: 4px;
+    margin-bottom: 24px;
+}
+
+.demo-node {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: white;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.demo-node.completed {
+    border-left: 4px solid #48bb78;
+}
+
+.demo-node.pending {
+    border-left: 4px solid #f6ad55;
+}
+
+.demo-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    background: #f0f0f0;
+}
+
+.demo-node-info {
+    flex: 1;
+}
+
+.demo-node-title {
+    font-weight: 600;
+    color: #1a1a2e;
+    margin-bottom: 4px;
+}
+
+.demo-node-time {
+    font-size: 12px;
+    color: #666;
+}
+
+.demo-reject-overlay {
+    background: rgba(220, 38, 38, 0.1);
+    border: 2px solid #fc8181;
+    border-radius: 16px;
+    padding: 32px;
+    position: relative;
+}
+
+.demo-reject-icon {
+    font-size: 64px;
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.demo-reject-reason {
+    background: white;
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+}
+
+.demo-countersign {
+    display: flex;
+    gap: 24px;
+    justify-content: center;
+    padding: 32px;
+}
+
+.countersign-item {
+    text-align: center;
+}
+
+.countersign-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+    opacity: 0.4;
+    transition: all 0.3s;
+}
+
+.countersign-icon.completed {
+    opacity: 1;
+    animation: bounce 0.5s;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.2); }
+}
+
+.countersign-name {
+    font-weight: 600;
+    color: #1a1a2e;
+}
+
+.demo-withdraw .withdraw-tag {
+    display: inline-block;
+    padding: 6px 16px;
+    background: #e2e3e5;
+    color: #383d41;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    margin-left: 12px;
+}

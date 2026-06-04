@@ -1,0 +1,19 @@
+{
+  "name": "enterprise-approval-workflow",
+  "version": "1.0.0",
+  "description": "企业级动态审批工作流中心",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": ["workflow", "approval", "express", "sqlite"],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "sqlite3": "^5.1.6",
+    "cors": "^2.8.5",
+    "body-parser": "^1.20.2"
+  }
+}
