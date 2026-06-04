@@ -92,6 +92,16 @@ function createTaskElement(task, memberId) {
     el.textContent = task.title;
     el.draggable = false;
 
+    // 添加删除按钮
+    const deleteBtn = document.createElement('button');
+    deleteBtn.className = 'delete-btn';
+    deleteBtn.textContent = '×';
+    deleteBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteTask(task.id);
+    });
+    el.appendChild(deleteBtn);
+
     el.addEventListener('mousedown', startDrag);
     return el;
 }
@@ -247,13 +257,6 @@ function showToast(message, type = 'warning') {
     }, 3000);
 }
 
-function setupControls() {
-    document.getElementById('btnPerfect').addEventListener('click', loadPerfectState);
-    document.getElementById('btnOverload').addEventListener('click', loadOverloadState);
-    document.getElementById('btnIdle').addEventListener('click', loadIdleState);
-    document.getElementById('btnUrgent').addEventListener('click', loadUrgentState);
-    document.getElementById('btnReset').addEventListener('click', resetState);
-}
 
 async function loadPerfectState() {
     tasks = [
@@ -343,4 +346,118 @@ async function saveBatchTasks() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ tasks })
     });
+}
+
+// 新增功能函数
+function setupModal() {
+    const modal = document.getElementById('addTaskModal');
+    const btn = document.getElementById('btnAddTask');
+    const span = document.getElementsByClassName('close')[0];
+    const form = document.getElementById('addTaskForm');
+
+    btn.onclick = () => {
+        openModal();
+    };
+
+    span.onclick = () => {
+        modal.style.display = 'none';
+    };
+
+    window.onclick = (event) => {
+        if (event.target === modal) {
+            modal.style.display = 'none';
+        }
+    };
+
+    form.onsubmit = async (e) => {
+        e.preventDefault();
+        await addNewTask();
+    };
+}
+
+function openModal() {
+    const modal = document.getElementById('addTaskModal');
+    const memberSelect = document.getElementById('taskMember');
+    
+    // 填充成员选择下拉
+    memberSelect.innerHTML = '';
+    members.forEach(member => {
+        const option = document.createElement('option');
+        option.value = member.id;
+        option.textContent = member.name;
+        memberSelect.appendChild(option);
+    });
+    
+    modal.style.display = 'block';
+}
+
+async function addNewTask() {
+    const title = document.getElementById('taskTitle').value;
+    const memberId = parseInt(document.getElementById('taskMember').value);
+    const startDay = parseInt(document.getElementById('taskStartDay').value);
+    const duration = parseInt(document.getElementById('taskDuration').value);
+    const color = document.getElementById('taskColor').value;
+
+    // 验证开始天数+持续时间不超过总天数
+    if (startDay + duration > TOTAL_DAYS) {
+        showToast('任务超出时间轴范围！', 'error');
+        return;
+    }
+
+    const newTask = {
+        title,
+        member_id: memberId,
+        start_day: startDay,
+        duration,
+        color
+    };
+
+    try {
+        const response = await fetch(`${API_BASE}/tasks`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(newTask)
+        });
+        const savedTask = await response.json();
+        
+        tasks.push(savedTask);
+        renderGantt();
+        showToast('任务添加成功！', 'success');
+        
+        // 关闭弹窗并重置表单
+        document.getElementById('addTaskModal').style.display = 'none';
+        document.getElementById('addTaskForm').reset();
+    } catch (error) {
+        showToast('添加任务失败！', 'error');
+        console.error(error);
+    }
+}
+
+async function deleteTask(taskId) {
+    if (!confirm('确定要删除这个任务吗？')) {
+        return;
+    }
+    
+    try {
+        await fetch(`${API_BASE}/tasks/${taskId}`, {
+            method: 'DELETE'
+        });
+        
+        tasks = tasks.filter(t => t.id !== taskId);
+        renderGantt();
+        showToast('任务删除成功！', 'success');
+    } catch (error) {
+        showToast('删除任务失败！', 'error');
+        console.error(error);
+    }
+}
+
+// 修改 setupControls 函数
+function setupControls() {
+    document.getElementById('btnPerfect').addEventListener('click', loadPerfectState);
+    document.getElementById('btnOverload').addEventListener('click', loadOverloadState);
+    document.getElementById('btnIdle').addEventListener('click', loadIdleState);
+    document.getElementById('btnUrgent').addEventListener('click', loadUrgentState);
+    document.getElementById('btnReset').addEventListener('click', resetState);
+    setupModal(); // 添加弹窗设置
 }
