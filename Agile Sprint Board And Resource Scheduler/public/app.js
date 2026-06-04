@@ -29,13 +29,21 @@ function renderGantt() {
     renderGanttBody();
 }
 
+// 日期转换函数
+function dayToWeekLabel(dayIndex) {
+    const week = Math.floor(dayIndex / 7) + 1;
+    const dayOfWeek = dayIndex % 7;
+    const weekDays = ['周一', '周二', '周三', '周四', '周五', '周六', '周日'];
+    return `第${week}周 ${weekDays[dayOfWeek]}`;
+}
+
 function renderTimelineHeader() {
     const header = document.getElementById('timelineHeader');
     header.innerHTML = '';
     for (let i = 0; i < TOTAL_DAYS; i++) {
         const cell = document.createElement('div');
         cell.className = 'day-cell';
-        cell.textContent = `Day ${i + 1}`;
+        cell.textContent = dayToWeekLabel(i);
         header.appendChild(cell);
     }
 }
@@ -378,6 +386,7 @@ function setupModal() {
 function openModal() {
     const modal = document.getElementById('addTaskModal');
     const memberSelect = document.getElementById('taskMember');
+    const startDaySelect = document.getElementById('taskStartDay');
     
     // 填充成员选择下拉
     memberSelect.innerHTML = '';
@@ -387,6 +396,15 @@ function openModal() {
         option.textContent = member.name;
         memberSelect.appendChild(option);
     });
+    
+    // 填充开始时间选择下拉
+    startDaySelect.innerHTML = '';
+    for (let i = 0; i < TOTAL_DAYS; i++) {
+        const option = document.createElement('option');
+        option.value = i;
+        option.textContent = dayToWeekLabel(i);
+        startDaySelect.appendChild(option);
+    }
     
     modal.style.display = 'block';
 }
