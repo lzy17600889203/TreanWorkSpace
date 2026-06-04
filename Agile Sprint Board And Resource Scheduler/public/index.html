@@ -1,0 +1,33 @@
+
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>产研团队排期工具 - 甘特图</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>产研团队排期工具</h1>
+            <div class="controls">
+                <button id="btnPerfect">完美并行</button>
+                <button id="btnOverload">严重过载</button>
+                <button id="btnIdle">资源闲置</button>
+                <button id="btnUrgent">突发插队</button>
+                <button id="btnReset">重置</button>
+            </div>
+        </header>
+        <div class="gantt-container">
+            <div class="gantt-header">
+                <div class="member-header">成员</div>
+                <div class="timeline-header" id="timelineHeader"></div>
+            </div>
+            <div class="gantt-body" id="ganttBody"></div>
+        </div>
+        <div id="toast" class="toast"></div>
+    </div>
+    <script src="app.js"></script>
+</body>
+</html>
