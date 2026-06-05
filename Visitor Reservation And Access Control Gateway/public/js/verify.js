@@ -1,0 +1,223 @@
+
+const container = document.getElementById('verifyContainer');
+const standbyState = document.getElementById('standbyState');
+const successState = document.getElementById('successState');
+const expiredState = document.getElementById('expiredState');
+const blacklistState = document.getElementById('blacklistState');
+const successInfo = document.getElementById('successInfo');
+const expiredMessage = document.getElementById('expiredMessage');
+const blacklistMessage = document.getElementById('blacklistMessage');
+
+let html5QrCode = null;
+let audioContext = null;
+
+// 初始化音频上下文
+function initAudio() {
+    if (!audioContext) {
+        audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+}
+
+// 播放成功音效
+function playSuccessSound() {
+    initAudio();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.value = 880;
+    oscillator.type = 'sine';
+    
+    gainNode.gain.setValueAtTime(0.5, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.2);
+}
+
+// 播放警报音效
+function playAlertSound() {
+    initAudio();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.type = 'square';
+    oscillator.frequency.setValueAtTime(400, audioContext.currentTime);
+    oscillator.frequency.setValueAtTime(800, audioContext.currentTime + 0.2);
+    oscillator.frequency.setValueAtTime(400, audioContext.currentTime + 0.4);
+    
+    gainNode.gain.setValueAtTime(0.4, audioContext.currentTime);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + 0.6);
+}
+
+// 隐藏所有状态
+function hideAllStates() {
+    standbyState.classList.add('hidden');
+    successState.classList.add('hidden');
+    expiredState.classList.add('hidden');
+    blacklistState.classList.add('hidden');
+    container.className = 'verify-container';
+}
+
+// 显示待机状态
+function showStandby() {
+    hideAllStates();
+    standbyState.classList.remove('hidden');
+}
+
+// 显示成功状态
+function showSuccess(data) {
+    hideAllStates();
+    container.classList.add('success-bg');
+    successState.classList.remove('hidden');
+    
+    successInfo.innerHTML = `
+        &lt;p&gt;&lt;strong&gt;姓名：&lt;/strong&gt;${data.name}&lt;/p&gt;
+        &lt;p&gt;&lt;strong&gt;公司：&lt;/strong&gt;${data.company}&lt;/p&gt;
+    `;
+    
+    playSuccessSound();
+    
+    // 3秒后返回待机
+    setTimeout(() =&gt; {
+        showStandby();
+        if (html5QrCode) {
+            html5QrCode.resumeScan();
+        }
+    }, 3000);
+}
+
+// 显示过期状态
+function showExpired(message, data) {
+    hideAllStates();
+    container.classList.add('expired-bg');
+    expiredState.classList.remove('hidden');
+    
+    expiredMessage.innerHTML = `
+        &lt;p&gt;${message}&lt;/p&gt;
+        ${data ? `&lt;p&gt;${data.name} - ${data.company}&lt;/p&gt;` : ''}
+    `;
+    
+    // 4秒后返回待机
+    setTimeout(() =&gt; {
+        showStandby();
+        if (html5QrCode) {
+            html5QrCode.resumeScan();
+        }
+    }, 4000);
+}
+
+// 显示黑名单状态
+function showBlacklist(message, data) {
+    hideAllStates();
+    container.classList.add('blacklist-bg');
+    blacklistState.classList.remove('hidden');
+    
+    blacklistMessage.innerHTML = `
+        &lt;p&gt;${message}&lt;/p&gt;
+        ${data ? `&lt;p&gt;&lt;strong&gt;${data.name}&lt;/strong&gt; - ${data.company}&lt;/p&gt;` : ''}
+    `;
+    
+    playAlertSound();
+    
+    // 6秒后返回待机
+    setTimeout(() =&gt; {
+        showStandby();
+        if (html5QrCode) {
+            html5QrCode.resumeScan();
+        }
+    }, 6000);
+}
+
+// 核验二维码
+async function verifyQRCode(qrCode) {
+    if (html5QrCode) {
+        html5QrCode.pauseScan();
+    }
+    
+    try {
+        const response = await fetch('/api/verify', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ qrCode })
+        });
+        
+        const result = await response.json();
+        
+        if (result.status === 'success') {
+            showSuccess(result.data);
+        } else if (result.status === 'expired') {
+            showExpired(result.message, result.data);
+        } else if (result.status === 'blacklist') {
+            showBlacklist(result.message, result.data);
+        } else {
+            alert(result.message || '核验失败');
+            showStandby();
+            if (html5QrCode) {
+                html5QrCode.resumeScan();
+            }
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        alert('网络错误，请重试');
+        showStandby();
+        if (html5QrCode) {
+            html5QrCode.resumeScan();
+        }
+    }
+}
+
+// 初始化扫码器
+async function initScanner() {
+    try {
+        html5QrCode = new Html5Qrcode("reader");
+        
+        const config = {
+            fps: 10,
+            qrbox: { width: 250, height: 250 },
+            aspectRatio: 1.0
+        };
+        
+        await html5QrCode.start(
+            { facingMode: "environment" },
+            config,
+            (decodedText) =&gt; {
+                verifyQRCode(decodedText);
+            },
+            (errorMessage) =&gt; {
+                // 忽略扫描错误
+            }
+        );
+    } catch (err) {
+        console.error('扫码器初始化失败:', err);
+        alert('无法启动摄像头，请确保已授权摄像头权限');
+    }
+}
+
+// 测试函数
+function testSuccess() {
+    showSuccess({ name: '张三', company: '科技公司' });
+}
+
+function testExpired() {
+    showExpired('该预约已于10分钟前失效', { name: '李四', company: '贸易公司' });
+}
+
+function testBlacklist() {
+    showBlacklist('该人员已被标记为黑名单', { name: '王五', company: '推销公司' });
+}
+
+// 页面加载完成后初始化
+document.addEventListener('DOMContentLoaded', () =&gt; {
+    initScanner();
+});
+

@@ -1,0 +1,61 @@
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang="zh-CN"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title&gt;保安核验台&lt;/title&gt;
+    &lt;link rel="stylesheet" href="css/verify.css"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div class="verify-container" id="verifyContainer"&gt;
+        &lt;!-- 待机状态 --&gt;
+        &lt;div class="state standby" id="standbyState"&gt;
+            &lt;div class="breathing-light"&gt;&lt;/div&gt;
+            &lt;h2&gt;请扫描访客二维码&lt;/h2&gt;
+            &lt;div id="reader" class="scanner"&gt;&lt;/div&gt;
+        &lt;/div&gt;
+
+        &lt;!-- 成功状态 --&gt;
+        &lt;div class="state success hidden" id="successState"&gt;
+            &lt;svg class="checkmark" viewBox="0 0 52 52"&gt;
+                &lt;circle class="checkmark-circle" cx="26" cy="26" r="25" fill="none"/&gt;
+                &lt;path class="checkmark-check" fill="none" d="M14.1 27.2l7.1 7.2 16.7-16.8"/&gt;
+            &lt;/svg&gt;
+            &lt;h2&gt;核验通过&lt;/h2&gt;
+            &lt;div class="info-display" id="successInfo"&gt;&lt;/div&gt;
+        &lt;/div&gt;
+
+        &lt;!-- 过期状态 --&gt;
+        &lt;div class="state expired hidden" id="expiredState"&gt;
+            &lt;svg class="cross" viewBox="0 0 52 52"&gt;
+                &lt;circle class="cross-circle" cx="26" cy="26" r="25" fill="none"/&gt;
+                &lt;line class="cross-line cross-line-left" x1="16" y1="16" x2="36" y2="36" stroke="none"/&gt;
+                &lt;line class="cross-line cross-line-right" x1="36" y1="16" x2="16" y2="36" stroke="none"/&gt;
+            &lt;/svg&gt;
+            &lt;h2&gt;预约已过期&lt;/h2&gt;
+            &lt;div class="message-display" id="expiredMessage"&gt;&lt;/div&gt;
+        &lt;/div&gt;
+
+        &lt;!-- 黑名单状态 --&gt;
+        &lt;div class="state blacklist hidden" id="blacklistState"&gt;
+            &lt;div class="alert-overlay"&gt;&lt;/div&gt;
+            &lt;div class="alert-box"&gt;
+                &lt;div class="alert-icon"&gt;!&lt;/div&gt;
+                &lt;h2&gt;黑名单预警&lt;/h2&gt;
+                &lt;div class="message-display" id="blacklistMessage"&gt;&lt;/div&gt;
+            &lt;/div&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;div class="test-buttons"&gt;
+        &lt;button onclick="testSuccess()"&gt;测试：通过&lt;/button&gt;
+        &lt;button onclick="testExpired()"&gt;测试：过期&lt;/button&gt;
+        &lt;button onclick="testBlacklist()"&gt;测试：黑名单&lt;/button&gt;
+    &lt;/div&gt;
+
+    &lt;script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"&gt;&lt;/script&gt;
+    &lt;script src="js/verify.js"&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+

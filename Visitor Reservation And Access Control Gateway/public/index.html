@@ -1,0 +1,54 @@
+
+&lt;!DOCTYPE html&gt;
+&lt;html lang="zh-CN"&gt;
+&lt;head&gt;
+    &lt;meta charset="UTF-8"&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;title&gt;访客预约&lt;/title&gt;
+    &lt;link rel="stylesheet" href="css/index.css"&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div class="container"&gt;
+        &lt;div class="card" id="formCard"&gt;
+            &lt;h1 class="title"&gt;访客预约&lt;/h1&gt;
+            &lt;form id="reservationForm"&gt;
+                &lt;div class="form-group"&gt;
+                    &lt;label for="name"&gt;姓名&lt;/label&gt;
+                    &lt;input type="text" id="name" name="name" required placeholder="请输入姓名"&gt;
+                &lt;/div&gt;
+                &lt;div class="form-group"&gt;
+                    &lt;label for="phone"&gt;手机号&lt;/label&gt;
+                    &lt;input type="tel" id="phone" name="phone" required placeholder="请输入手机号" pattern="[0-9]{11}"&gt;
+                &lt;/div&gt;
+                &lt;div class="form-group"&gt;
+                    &lt;label for="company"&gt;访问公司&lt;/label&gt;
+                    &lt;input type="text" id="company" name="company" required placeholder="请输入访问公司"&gt;
+                &lt;/div&gt;
+                &lt;div class="form-group"&gt;
+                    &lt;label for="duration"&gt;有效期（分钟）&lt;/label&gt;
+                    &lt;select id="duration" name="duration"&gt;
+                        &lt;option value="30"&gt;30分钟&lt;/option&gt;
+                        &lt;option value="60" selected&gt;1小时&lt;/option&gt;
+                        &lt;option value="120"&gt;2小时&lt;/option&gt;
+                        &lt;option value="180"&gt;3小时&lt;/option&gt;
+                    &lt;/select&gt;
+                &lt;/div&gt;
+                &lt;button type="submit" class="btn btn-primary"&gt;提交预约&lt;/button&gt;
+            &lt;/form&gt;
+        &lt;/div&gt;
+
+        &lt;div class="card hidden" id="qrCard"&gt;
+            &lt;h1 class="title"&gt;预约成功&lt;/h1&gt;
+            &lt;div class="qr-container"&gt;
+                &lt;div id="qrcode"&gt;&lt;/div&gt;
+            &lt;/div&gt;
+            &lt;div class="info" id="qrInfo"&gt;&lt;/div&gt;
+            &lt;button class="btn btn-secondary" onclick="backToForm()"&gt;返回预约&lt;/button&gt;
+        &lt;/div&gt;
+    &lt;/div&gt;
+
+    &lt;script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"&gt;&lt;/script&gt;
+    &lt;script src="js/index.js"&gt;&lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+
