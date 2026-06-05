@@ -90,15 +90,27 @@ body {
 .component-item {
     padding: 15px;
     background: #f0f4ff;
-    border: 2px dashed #667eea;
+    border: 2px solid #667eea;
     border-radius: 8px;
-    cursor: grab;
+    cursor: pointer;
     transition: all 0.3s;
+    text-align: center;
+    font-weight: 500;
+}
+
+.component-item.clickable {
+    cursor: pointer;
 }
 
 .component-item:hover {
-    background: #e0e9ff;
-    transform: translateX(5px);
+    background: #667eea;
+    color: white;
+    transform: scale(1.02);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+}
+
+.component-item:active {
+    transform: scale(0.98);
 }
 
 .component-item .icon {

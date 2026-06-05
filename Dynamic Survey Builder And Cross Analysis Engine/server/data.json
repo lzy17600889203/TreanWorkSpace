@@ -273,6 +273,61 @@
         }
       ],
       "created_at": "2026-06-05T01:49:52.622Z"
+    },
+    {
+      "id": 6,
+      "title": "健身房问卷",
+      "structure": [
+        {
+          "id": 1,
+          "type": "radio",
+          "title": "您的年龄段是？",
+          "options": [
+            "18-25岁",
+            "26-35岁",
+            "36-45岁",
+            "46岁以上"
+          ],
+          "jumpLogic": []
+        },
+        {
+          "id": 2,
+          "type": "radio",
+          "title": "您对平时有健身习惯吗？",
+          "options": [
+            "没有",
+            "偶尔一次",
+            "每天坚持",
+            "健身达人"
+          ],
+          "jumpLogic": []
+        },
+        {
+          "id": 3,
+          "type": "radio",
+          "title": "您健身时间多久了？",
+          "options": [
+            "3年",
+            "5年",
+            "8年",
+            "10年"
+          ],
+          "jumpLogic": []
+        },
+        {
+          "id": 4,
+          "type": "radio",
+          "title": "您平时健身时间段是什么时间",
+          "options": [
+            "上午",
+            "下午",
+            "晚上",
+            "早上"
+          ],
+          "jumpLogic": []
+        }
+      ],
+      "created_at": "2026-06-05T02:06:03.842Z"
     }
   ],
   "responses": [
@@ -298,8 +353,31 @@
       "survey_id": 4,
       "answers": {},
       "submitted_at": "2026-06-05T01:48:08.317Z"
+    },
+    {
+      "id": 3,
+      "survey_id": 5,
+      "answers": {
+        "3": [
+          "功能实用性",
+          "界面设计",
+          "性能速度",
+          "售后服务"
+        ]
+      },
+      "submitted_at": "2026-06-05T01:56:09.367Z"
+    },
+    {
+      "id": 4,
+      "survey_id": 6,
+      "answers": {
+        "1": "26-35岁",
+        "2": "健身达人",
+        "4": "早上"
+      },
+      "submitted_at": "2026-06-05T02:06:27.339Z"
     }
   ],
-  "surveyIdCounter": 6,
-  "responseIdCounter": 3
+  "surveyIdCounter": 7,
+  "responseIdCounter": 5
 }

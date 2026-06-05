@@ -79,6 +79,12 @@ function initDragAndDrop() {
     const canvas = document.getElementById('canvas');
 
     components.forEach(comp => {
+        // 点击添加题目
+        comp.addEventListener('click', () => {
+            addQuestion(comp.dataset.type);
+        });
+        
+        // 拖拽添加题目
         comp.addEventListener('dragstart', (e) => {
             e.dataTransfer.setData('type', comp.dataset.type);
         });
@@ -97,7 +103,7 @@ function initDragAndDrop() {
         e.preventDefault();
         canvas.classList.remove('drag-over');
         const type = e.dataTransfer.getData('type');
-        addQuestion(type);
+        if (type) addQuestion(type);
     });
 }
 
@@ -120,6 +126,7 @@ function initNavigation() {
     });
 
     document.getElementById('saveSurvey').addEventListener('click', saveSurvey);
+    document.getElementById('clearSurvey').addEventListener('click', clearSurvey);
     document.getElementById('loadDemo1').addEventListener('click', loadDemoSurvey1);
     document.getElementById('loadDemo2').addEventListener('click', loadDemoSurvey2);
 }
@@ -138,6 +145,14 @@ function loadDemoSurvey2() {
     renderCanvas();
 }
 
+function clearSurvey() {
+    if (confirm('确定要清空所有题目吗？')) {
+        questions = [];
+        currentSurveyId = null;
+        renderCanvas();
+    }
+}
+
 function addQuestion(type) {
     const id = questions.length > 0 ? Math.max(...questions.map(q => q.id)) + 1 : 1;
     const question = {
@@ -152,18 +167,31 @@ function addQuestion(type) {
     };
     questions.push(question);
     renderCanvas();
+    // 添加后自动打开编辑弹窗，方便用户立即编辑
+    editQuestion(questions.length - 1);
 }
 
 function renderCanvas() {
     const canvas = document.getElementById('canvas');
     canvas.innerHTML = '';
     
+    if (questions.length === 0) {
+        canvas.innerHTML = `
+            <div style="text-align: center; padding: 60px 20px; color: #999;">
+                <div style="font-size: 48px; margin-bottom: 20px;">📋</div>
+                <h3 style="color: #666; margin-bottom: 10px;">问卷还是空的</h3>
+                <p>点击左侧「新增题目」按钮添加题目，开始创建您的问卷吧！</p>
+            </div>
+        `;
+        return;
+    }
+    
     questions.forEach((q, index) => {
         const div = document.createElement('div');
         div.className = 'question-item';
         
         let typeLabel = q.type === 'radio' ? '单选题' : 
-                        q.type === 'checkbox' ? '多选题' : '矩阵题';
+                       q.type === 'checkbox' ? '多选题' : '矩阵题';
         
         let optionsHtml = '';
         if (q.type === 'matrix') {
