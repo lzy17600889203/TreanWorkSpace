@@ -45,12 +45,34 @@
                 <div class="message-display" id="blacklistMessage"></div>
             </div>
         </div>
+
+        <!-- 夜间待机状态 -->
+        <div class="state night hidden" id="nightState">
+            <div class="breathing-light night-light"></div>
+            <h2 style="color: #666; font-size: 18px; opacity: 0.7">夜间无人值守</h2>
+        </div>
     </div>
 
-    <div class="test-buttons">
-        <button onclick="testSuccess()">测试：通过</button>
-        <button onclick="testExpired()">测试：过期</button>
-        <button onclick="testBlacklist()">测试：黑名单</button>
+    <div class="demo-panel">
+        <h3>🎬 演示模式</h3>
+        <p class="demo-tip">点击下方按钮测试各种状态效果</p>
+        <div class="demo-buttons">
+            <button class="demo-btn demo-success" onclick="testSuccess()">
+                ✅ 顺畅通行
+            </button>
+            <button class="demo-btn demo-expired" onclick="testExpired()">
+                ❌ 过期拦截
+            </button>
+            <button class="demo-btn demo-blacklist" onclick="testBlacklist()">
+                ⚠️ 黑名单预警
+            </button>
+            <button class="demo-btn demo-night" onclick="testNightMode()">
+                🌙 夜间待机
+            </button>
+            <button class="demo-btn demo-normal" onclick="showStandby()">
+                🔄 返回待机
+            </button>
+        </div>
     </div>
 
     <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>

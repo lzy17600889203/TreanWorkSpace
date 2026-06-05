@@ -3,6 +3,7 @@ const standbyState = document.getElementById('standbyState');
 const successState = document.getElementById('successState');
 const expiredState = document.getElementById('expiredState');
 const blacklistState = document.getElementById('blacklistState');
+const nightState = document.getElementById('nightState');
 const successInfo = document.getElementById('successInfo');
 const expiredMessage = document.getElementById('expiredMessage');
 const blacklistMessage = document.getElementById('blacklistMessage');
@@ -58,6 +59,7 @@ function hideAllStates() {
     successState.classList.add('hidden');
     expiredState.classList.add('hidden');
     blacklistState.classList.add('hidden');
+    nightState.classList.add('hidden');
     container.className = 'verify-container';
 }
 
@@ -122,6 +124,12 @@ function showBlacklist(message, data) {
             html5QrCode.resumeScan();
         }
     }, 6000);
+}
+
+function showNightMode() {
+    hideAllStates();
+    container.classList.add('night-bg');
+    nightState.classList.remove('hidden');
 }
 
 async function verifyQRCode(qrCode) {
@@ -197,7 +205,11 @@ function testExpired() {
 }
 
 function testBlacklist() {
-    showBlacklist('该人员已被标记为黑名单', { name: '王五', company: '推销公司' });
+    showBlacklist('该人员已被标记为恶意推销', { name: '王五', company: '推销公司' });
+}
+
+function testNightMode() {
+    showNightMode();
 }
 
 document.addEventListener('DOMContentLoaded', () => {

@@ -39,14 +39,18 @@
         <div class="card hidden" id="qrCard">
             <h1 class="title">预约成功</h1>
             <div class="qr-container">
-                <div id="qrcode"></div>
+                <img id="qrcode-img" alt="预约二维码" style="display:none">
+                <div id="qrcode-text" style="color:#666; padding:20px; text-align:center; display:none">
+                    <p><strong>预约码</strong></p>
+                    <p id="qr-code-content" style="word-break:break-all; font-size:12px; color:#999; margin-top:10px"></p>
+                </div>
             </div>
             <div class="info" id="qrInfo"></div>
             <button class="btn btn-secondary" onclick="backToForm()">返回预约</button>
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     <script src="js/index.js"></script>
 </body>
 </html>
