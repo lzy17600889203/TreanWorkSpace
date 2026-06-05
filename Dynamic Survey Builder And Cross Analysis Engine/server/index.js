@@ -57,6 +57,26 @@ app.get('/api/surveys/:id', (req, res) => {
     res.json(survey);
 });
 
+// 更新问卷
+app.put('/api/surveys/:id', (req, res) => {
+    const { title, structure } = req.body;
+    const surveyIndex = surveys.findIndex(s => s.id == req.params.id);
+    
+    if (surveyIndex === -1) {
+        return res.status(404).json({ error: 'Survey not found' });
+    }
+    
+    surveys[surveyIndex] = {
+        ...surveys[surveyIndex],
+        title,
+        structure,
+        updated_at: new Date().toISOString()
+    };
+    
+    saveData();
+    res.json(surveys[surveyIndex]);
+});
+
 app.post('/api/surveys/:id/responses', (req, res) => {
     const { answers } = req.body;
     const response = {

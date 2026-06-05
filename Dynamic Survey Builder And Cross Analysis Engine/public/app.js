@@ -131,18 +131,22 @@ function initNavigation() {
     document.getElementById('loadDemo2').addEventListener('click', loadDemoSurvey2);
 }
 
-function loadDemoSurvey1() {
+async function loadDemoSurvey1() {
     surveyTitle = demoSurvey1.title;
     questions = JSON.parse(JSON.stringify(demoSurvey1.structure));
     document.getElementById('surveyTitle').value = surveyTitle;
     renderCanvas();
+    // 自动保存演示问卷
+    await saveSurvey();
 }
 
-function loadDemoSurvey2() {
+async function loadDemoSurvey2() {
     surveyTitle = demoSurvey2.title;
     questions = JSON.parse(JSON.stringify(demoSurvey2.structure));
     document.getElementById('surveyTitle').value = surveyTitle;
     renderCanvas();
+    // 自动保存演示问卷
+    await saveSurvey();
 }
 
 function clearSurvey() {
@@ -363,14 +367,27 @@ function saveEditedQuestion() {
 
 async function saveSurvey() {
     surveyTitle = document.getElementById('surveyTitle').value;
-    const res = await fetch('/api/surveys', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: surveyTitle, structure: questions })
-    });
+    
+    let res;
+    if (currentSurveyId) {
+        // 更新现有问卷
+        res = await fetch(`/api/surveys/${currentSurveyId}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title: surveyTitle, structure: questions })
+        });
+    } else {
+        // 创建新问卷
+        res = await fetch('/api/surveys', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title: surveyTitle, structure: questions })
+        });
+    }
+    
     const data = await res.json();
     currentSurveyId = data.id;
-    alert('问卷保存成功！ID: ' + data.id);
+    alert(currentSurveyId ? '问卷保存成功！' : '问卷创建成功！ID: ' + data.id);
 }
 
 let previewAnswers = {};
