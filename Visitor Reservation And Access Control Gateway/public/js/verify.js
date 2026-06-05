@@ -1,4 +1,3 @@
-
 const container = document.getElementById('verifyContainer');
 const standbyState = document.getElementById('standbyState');
 const successState = document.getElementById('successState');
@@ -11,14 +10,12 @@ const blacklistMessage = document.getElementById('blacklistMessage');
 let html5QrCode = null;
 let audioContext = null;
 
-// 初始化音频上下文
 function initAudio() {
     if (!audioContext) {
         audioContext = new (window.AudioContext || window.webkitAudioContext)();
     }
 }
 
-// 播放成功音效
 function playSuccessSound() {
     initAudio();
     const oscillator = audioContext.createOscillator();
@@ -37,7 +34,6 @@ function playSuccessSound() {
     oscillator.stop(audioContext.currentTime + 0.2);
 }
 
-// 播放警报音效
 function playAlertSound() {
     initAudio();
     const oscillator = audioContext.createOscillator();
@@ -57,7 +53,6 @@ function playAlertSound() {
     oscillator.stop(audioContext.currentTime + 0.6);
 }
 
-// 隐藏所有状态
 function hideAllStates() {
     standbyState.classList.add('hidden');
     successState.classList.add('hidden');
@@ -66,27 +61,24 @@ function hideAllStates() {
     container.className = 'verify-container';
 }
 
-// 显示待机状态
 function showStandby() {
     hideAllStates();
     standbyState.classList.remove('hidden');
 }
 
-// 显示成功状态
 function showSuccess(data) {
     hideAllStates();
     container.classList.add('success-bg');
     successState.classList.remove('hidden');
     
     successInfo.innerHTML = `
-        &lt;p&gt;&lt;strong&gt;姓名：&lt;/strong&gt;${data.name}&lt;/p&gt;
-        &lt;p&gt;&lt;strong&gt;公司：&lt;/strong&gt;${data.company}&lt;/p&gt;
+        <p><strong>姓名：</strong>${data.name}</p>
+        <p><strong>公司：</strong>${data.company}</p>
     `;
     
     playSuccessSound();
     
-    // 3秒后返回待机
-    setTimeout(() =&gt; {
+    setTimeout(() => {
         showStandby();
         if (html5QrCode) {
             html5QrCode.resumeScan();
@@ -94,19 +86,17 @@ function showSuccess(data) {
     }, 3000);
 }
 
-// 显示过期状态
 function showExpired(message, data) {
     hideAllStates();
     container.classList.add('expired-bg');
     expiredState.classList.remove('hidden');
     
     expiredMessage.innerHTML = `
-        &lt;p&gt;${message}&lt;/p&gt;
-        ${data ? `&lt;p&gt;${data.name} - ${data.company}&lt;/p&gt;` : ''}
+        <p>${message}</p>
+        ${data ? `<p>${data.name} - ${data.company}</p>` : ''}
     `;
     
-    // 4秒后返回待机
-    setTimeout(() =&gt; {
+    setTimeout(() => {
         showStandby();
         if (html5QrCode) {
             html5QrCode.resumeScan();
@@ -114,21 +104,19 @@ function showExpired(message, data) {
     }, 4000);
 }
 
-// 显示黑名单状态
 function showBlacklist(message, data) {
     hideAllStates();
     container.classList.add('blacklist-bg');
     blacklistState.classList.remove('hidden');
     
     blacklistMessage.innerHTML = `
-        &lt;p&gt;${message}&lt;/p&gt;
-        ${data ? `&lt;p&gt;&lt;strong&gt;${data.name}&lt;/strong&gt; - ${data.company}&lt;/p&gt;` : ''}
+        <p>${message}</p>
+        ${data ? `<p><strong>${data.name}</strong> - ${data.company}</p>` : ''}
     `;
     
     playAlertSound();
     
-    // 6秒后返回待机
-    setTimeout(() =&gt; {
+    setTimeout(() => {
         showStandby();
         if (html5QrCode) {
             html5QrCode.resumeScan();
@@ -136,7 +124,6 @@ function showBlacklist(message, data) {
     }, 6000);
 }
 
-// 核验二维码
 async function verifyQRCode(qrCode) {
     if (html5QrCode) {
         html5QrCode.pauseScan();
@@ -176,7 +163,6 @@ async function verifyQRCode(qrCode) {
     }
 }
 
-// 初始化扫码器
 async function initScanner() {
     try {
         html5QrCode = new Html5Qrcode("reader");
@@ -190,11 +176,10 @@ async function initScanner() {
         await html5QrCode.start(
             { facingMode: "environment" },
             config,
-            (decodedText) =&gt; {
+            (decodedText) => {
                 verifyQRCode(decodedText);
             },
-            (errorMessage) =&gt; {
-                // 忽略扫描错误
+            (errorMessage) => {
             }
         );
     } catch (err) {
@@ -203,7 +188,6 @@ async function initScanner() {
     }
 }
 
-// 测试函数
 function testSuccess() {
     showSuccess({ name: '张三', company: '科技公司' });
 }
@@ -216,8 +200,6 @@ function testBlacklist() {
     showBlacklist('该人员已被标记为黑名单', { name: '王五', company: '推销公司' });
 }
 
-// 页面加载完成后初始化
-document.addEventListener('DOMContentLoaded', () =&gt; {
+document.addEventListener('DOMContentLoaded', () => {
     initScanner();
 });
-

@@ -1,4 +1,3 @@
-
 * {
     margin: 0;
     padding: 0;
@@ -57,7 +56,6 @@ body {
     display: none;
 }
 
-/* 待机状态 */
 .standby h2 {
     color: #94a3b8;
     font-size: 28px;
@@ -106,7 +104,6 @@ body {
     border-radius: 16px;
 }
 
-/* 成功状态 */
 .success h2 {
     color: white;
     font-size: 48px;
@@ -158,7 +155,6 @@ body {
     font-weight: 600;
 }
 
-/* 过期状态 */
 .expired h2 {
     color: white;
     font-size: 48px;
@@ -196,7 +192,6 @@ body {
     animation: stroke 0.2s cubic-bezier(0.65, 0, 0.45, 1) 0.8s forwards;
 }
 
-/* 黑名单状态 */
 .blacklist {
     background: #dc2626;
 }
@@ -270,7 +265,6 @@ body {
     line-height: 1.6;
 }
 
-/* 测试按钮 */
 .test-buttons {
     position: fixed;
     bottom: 20px;
@@ -295,4 +289,3 @@ body {
 .test-buttons button:hover {
     background: rgba(255, 255, 255, 0.2);
 }
-
