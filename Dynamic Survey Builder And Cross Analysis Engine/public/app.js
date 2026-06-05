@@ -416,6 +416,9 @@ function renderPreview() {
 
 function handleAnswer(qid, value) {
     previewAnswers[qid] = value;
+    // 清除当前题目的高亮
+    const el = document.getElementById(`preview-q${qid}`);
+    if (el) el.style.borderLeft = '';
     applyJumpLogic();
 }
 
@@ -426,11 +429,17 @@ function handleCheckbox(qid, value, checked) {
     } else {
         previewAnswers[qid] = previewAnswers[qid].filter(v => v !== value);
     }
+    // 清除当前题目的高亮
+    const el = document.getElementById(`preview-q${qid}`);
+    if (el) el.style.borderLeft = '';
 }
 
 function handleMatrix(qid, rowIndex, value) {
     if (!previewAnswers[qid]) previewAnswers[qid] = {};
     previewAnswers[qid][rowIndex] = value;
+    // 清除当前题目的高亮
+    const el = document.getElementById(`preview-q${qid}`);
+    if (el) el.style.borderLeft = '';
 }
 
 function applyJumpLogic() {
@@ -462,11 +471,104 @@ function applyJumpLogic() {
     });
 }
 
+// 获取当前可见的题目列表（考虑跳转逻辑）
+function getVisibleQuestions() {
+    const visibleIds = new Set(questions.map(q => q.id));
+    
+    questions.forEach(q => {
+        if (q.jumpLogic && q.jumpLogic.length > 0 && previewAnswers[q.id]) {
+            const answer = previewAnswers[q.id];
+            const rule = q.jumpLogic.find(jl => jl.optionValue === answer);
+            if (rule) {
+                const qIndex = questions.findIndex(x => x.id === q.id);
+                const targetIndex = questions.findIndex(x => x.id === rule.targetQuestion);
+                for (let i = qIndex + 1; i < targetIndex; i++) {
+                    visibleIds.delete(questions[i].id);
+                }
+            }
+        }
+    });
+    
+    return questions.filter(q => visibleIds.has(q.id));
+}
+
+// 验证是否所有可见题目都已完成
+function validateAnswers() {
+    const visibleQuestions = getVisibleQuestions();
+    const incompleteQuestions = [];
+    
+    visibleQuestions.forEach((q, idx) => {
+        const answer = previewAnswers[q.id];
+        let isComplete = false;
+        
+        if (q.type === 'radio') {
+            isComplete = answer !== undefined && answer !== '';
+        } else if (q.type === 'checkbox') {
+            isComplete = Array.isArray(answer) && answer.length > 0;
+        } else if (q.type === 'matrix') {
+            // 矩阵题需要所有行都有答案
+            if (answer && typeof answer === 'object') {
+                const rowCount = q.rows.length;
+                let answeredRows = 0;
+                for (let i = 0; i < rowCount; i++) {
+                    if (answer[i] !== undefined) answeredRows++;
+                }
+                isComplete = answeredRows === rowCount;
+            }
+        }
+        
+        if (!isComplete) {
+            incompleteQuestions.push({
+                index: idx + 1,
+                title: q.title,
+                type: q.type
+            });
+        }
+    });
+    
+    return incompleteQuestions;
+}
+
+// 高亮显示未完成的题目
+function highlightIncompleteQuestions(incomplete) {
+    // 清除之前的高亮
+    document.querySelectorAll('.preview-question').forEach(el => {
+        el.style.borderLeft = '';
+    });
+    
+    // 高亮未完成的
+    incomplete.forEach(item => {
+        const qObj = questions.find(q => q.title === item.title);
+        if (qObj) {
+            const el = document.getElementById(`preview-q${qObj.id}`);
+            if (el) {
+                el.style.borderLeft = '4px solid #ff6b6b';
+            }
+        }
+    });
+}
+
 async function submitAnswers() {
     if (!currentSurveyId) {
         alert('请先保存问卷！');
         return;
     }
+    
+    const incomplete = validateAnswers();
+    
+    if (incomplete.length > 0) {
+        // 构建提示信息
+        let msg = '您还有以下题目未完成：\n\n';
+        incomplete.forEach((item, i) => {
+            msg += `${i + 1}. Q${item.index}: ${item.title}\n`;
+        });
+        msg += '\n请完成所有题目后再提交！';
+        
+        alert(msg);
+        highlightIncompleteQuestions(incomplete);
+        return;
+    }
+    
     await fetch(`/api/surveys/${currentSurveyId}/responses`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
