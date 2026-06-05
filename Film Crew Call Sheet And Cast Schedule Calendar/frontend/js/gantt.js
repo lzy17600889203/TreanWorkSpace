@@ -144,12 +144,13 @@ class GanttChart {
       const startDay = this.getDayIndex(new Date(scene.startDate));
       this.dragStartDay = startDay;
       this.dragOffset.x = pos.x - (this.labelWidth + startDay * this.dayWidth);
+      this.dragStartY = pos.y;
       
       const rows = this.getRows();
       const sceneRows = this.getSceneRows(scene);
       this.dragStartRowIndex = rows.findIndex(r => r.id === sceneRows[0]?.id);
       
-      this.canvas.style.cursor = 'grabbing';
+      this.canvas.style.cursor = 'ew-resize';
     }
   }
   
@@ -363,7 +364,7 @@ class GanttChart {
       const sceneRows = this.getSceneRows(scene);
       
       for (const rowItem of sceneRows) {
-        const rowIndex = rows.findIndex(r => r.id === rowItem.id);
+        let rowIndex = rows.findIndex(r => r.id === rowItem.id);
         if (rowIndex === -1) continue;
         
         const startDay = this.getDayIndex(new Date(scene.startDate));
@@ -371,7 +372,14 @@ class GanttChart {
         const duration = endDay - startDay + 1;
         
         const x = this.labelWidth + startDay * this.dayWidth + 4;
-        const y = this.headerHeight + rowIndex * this.rowHeight + 5;
+        
+        let y;
+        if (this.dragScene && this.dragScene.id === scene.id) {
+          y = this.headerHeight + this.dragStartRowIndex * this.rowHeight + 5;
+        } else {
+          y = this.headerHeight + rowIndex * this.rowHeight + 5;
+        }
+        
         const width = duration * this.dayWidth - 8;
         const height = this.rowHeight - 10;
         
