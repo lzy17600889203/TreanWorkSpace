@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>动态问卷构建系统</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div id="app">
+        <header class="header">
+            <h1>📋 动态问卷构建系统</h1>
+            <nav class="nav-tabs">
+                <button class="nav-btn active" data-tab="builder">构建问卷</button>
+                <button class="nav-btn" data-tab="preview">预览</button>
+                <button class="nav-btn" data-tab="dashboard">数据看板</button>
+            </nav>
+        </header>
+        
+        <main class="main">
+            <div id="builder" class="tab-content active">
+                <div class="builder-container">
+                    <div class="sidebar">
+                        <h3>组件库</h3>
+                        <div class="component-list">
+                            <div class="component-item" draggable="true" data-type="radio">
+                                <span class="icon">🔘</span> 单选题
+                            </div>
+                            <div class="component-item" draggable="true" data-type="checkbox">
+                                <span class="icon">☑️</span> 多选题
+                            </div>
+                            <div class="component-item" draggable="true" data-type="matrix">
+                                <span class="icon">📊</span> 矩阵题
+                            </div>
+                        </div>
+                        
+                        <div class="survey-actions">
+                            <input type="text" id="surveyTitle" placeholder="问卷标题" value="用户满意度调查">
+                            <button id="saveSurvey">💾 保存问卷</button>
+                            <button id="loadDemo1">📊 加载演示数据1</button>
+                            <button id="loadDemo2">🎲 加载演示数据2</button>
+                        </div>
+                    </div>
+                    
+                    <div class="canvas-container">
+                        <h2>表单画布</h2>
+                        <div id="canvas" class="canvas"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="preview" class="tab-content">
+                <div class="preview-container">
+                    <h2 id="previewTitle">预览问卷</h2>
+                    <div id="previewForm"></div>
+                    <button id="submitPreview" style="margin-top: 20px;">提交答案</button>
+                </div>
+            </div>
+            
+            <div id="dashboard" class="tab-content">
+                <div class="dashboard-container">
+                    <h2>数据看板 - 交叉热力图</h2>
+                    
+                    <div class="controls">
+                        <div class="control-group">
+                            <label>X轴维度：</label>
+                            <select id="xDimension"></select>
+                        </div>
+                        <div class="control-group">
+                            <label>Y轴维度：</label>
+                            <select id="yDimension"></select>
+                        </div>
+                        <div class="control-group">
+                            <label>演示模式：</label>
+                            <select id="demoMode">
+                                <option value="real">真实数据</option>
+                                <option value="concentrated">数据极度集中</option>
+                                <option value="diverse">意见严重分歧</option>
+                                <option value="low">低回收率</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="heatmap-wrapper">
+                        <div id="sampleWarning" class="sample-warning" style="display: none;">
+                            当前样本量不足 50
+                        </div>
+                        <canvas id="heatmap"></canvas>
+                    </div>
+                    
+                    <div id="heatmapLegend" class="legend"></div>
+                </div>
+            </div>
+        </main>
+    </div>
+    
+    <div id="questionModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3 id="modalTitle">编辑题目</h3>
+            <div id="modalBody"></div>
+            <div class="modal-actions">
+                <button id="cancelModal">取消</button>
+                <button id="saveQuestion">保存</button>
+            </div>
+        </div>
+    </div>
+    
+    <script src="app.js"></script>
+</body>
+</html>
