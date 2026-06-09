@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>访客预约</title>
+    <link rel="stylesheet" href="css/index.css">
+</head>
+<body>
+    <div class="container">
+        <div class="card" id="formCard">
+            <h1 class="title">访客预约</h1>
+            <form id="reservationForm">
+                <div class="form-group">
+                    <label for="name">姓名</label>
+                    <input type="text" id="name" name="name" required placeholder="请输入姓名">
+                </div>
+                <div class="form-group">
+                    <label for="phone">手机号</label>
+                    <input type="tel" id="phone" name="phone" required placeholder="请输入手机号" pattern="[0-9]{11}">
+                </div>
+                <div class="form-group">
+                    <label for="company">访问公司</label>
+                    <input type="text" id="company" name="company" required placeholder="请输入访问公司">
+                </div>
+                <div class="form-group">
+                    <label for="duration">有效期（分钟）</label>
+                    <select id="duration" name="duration">
+                        <option value="30">30分钟</option>
+                        <option value="60" selected>1小时</option>
+                        <option value="120">2小时</option>
+                        <option value="180">3小时</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn btn-primary">提交预约</button>
+            </form>
+        </div>
+
+        <div class="card hidden" id="qrCard">
+            <h1 class="title">预约成功</h1>
+            <div class="qr-container">
+                <img id="qrcode-img" alt="预约二维码" style="display:none">
+                <div id="qrcode-text" style="color:#666; padding:20px; text-align:center; display:none">
+                    <p><strong>预约码</strong></p>
+                    <p id="qr-code-content" style="word-break:break-all; font-size:12px; color:#999; margin-top:10px"></p>
+                </div>
+            </div>
+            <div class="info" id="qrInfo"></div>
+            <button class="btn btn-secondary" onclick="backToForm()">返回预约</button>
+        </div>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script src="js/index.js"></script>
+</body>
+</html>
