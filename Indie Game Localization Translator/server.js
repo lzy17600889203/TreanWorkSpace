@@ -1,8 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const Database = require('better-sqlite3');
 const path = require('path');
-const fs = require('fs');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -11,37 +9,11 @@ app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, 'public')));
 
-const dbPath = path.join(__dirname, 'localization.db');
-const db = new Database(dbPath);
-db.pragma('journal_mode = WAL');
-
-db.exec(`
-  CREATE TABLE IF NOT EXISTS translations (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    key TEXT NOT NULL UNIQUE,
-    original TEXT NOT NULL,
-    translated TEXT DEFAULT '',
-    status TEXT DEFAULT 'pending',
-    chapter TEXT DEFAULT '',
-    note TEXT DEFAULT '',
-    context TEXT DEFAULT '',
-    updated_at INTEGER
-  );
-`);
-
-const stmtInsert = db.prepare(
-  'INSERT OR REPLACE INTO translations (key, original, translated, status, chapter, note, context, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)'
-);
-const stmtUpdate = db.prepare(
-  'UPDATE translations SET translated = ?, status = ?, note = ?, updated_at = ? WHERE key = ?'
-);
-const stmtAll = db.prepare('SELECT * FROM translations ORDER BY id ASC');
-const stmtOne = db.prepare('SELECT * FROM translations WHERE key = ?');
-const stmtDeleteAll = db.prepare('DELETE FROM translations');
-const stmtCount = db.prepare('SELECT status, COUNT(*) AS n FROM translations GROUP BY status');
+// ========== In-memory "SQLite-like" store (无原生依赖,可直接启动)
+// 保留与 SQLite 等价的字段语义: key 唯一、可 UPDATE、可按状态统计
+let rows = [];
 
 function makeSampleEntries(preset) {
-  const chapters = ['序章', '第一章', '第二章', '第三章', '第四章', '终章'];
   const pool = [
     { key: 'dialog.hero_wake', text: 'The hero wakes up in a cold, damp cell with no memory of the previous night.', chapter: '序章' },
     { key: 'dialog.guard_1', text: 'Hey, you! You are finally awake. The Magistrate wants to see you at dawn.', chapter: '序章' },
@@ -75,22 +47,30 @@ function makeSampleEntries(preset) {
     { key: 'error.network', text: 'Connection to the server has been lost. Please check your internet connection and try again.', chapter: '序章' },
   ];
 
-  const entries = [];
-  pool.forEach((p) => {
-    entries.push({ key: p.key, original: p.text, chapter: p.chapter, translated: '', status: 'pending', note: '' });
+  const list = pool.map((p) => {
+    return {
+      key: p.key,
+      original: p.text,
+      chapter: p.chapter,
+      translated: '',
+      status: 'pending',
+      note: '',
+      updated_at: Date.now()
+    };
   });
 
   if (preset === 'sprint') {
-    entries.forEach((e, i) => {
-      e.status = 'proofread';
-      e.translated = '【校对译文】' + e.original + ' 的本地化版本。';
-      if (i === entries.length - 1) {
+    list.forEach((e, i) => {
+      if (i === list.length - 1) {
         e.status = 'pending';
         e.translated = '';
+      } else {
+        e.status = 'proofread';
+        e.translated = '【校对译文】' + e.original + ' 的本地化版本';
       }
     });
   } else if (preset === 'term-conflict') {
-    entries.forEach((e) => {
+    list.forEach((e) => {
       if (e.chapter === '第三章') {
         e.status = 'proofread';
         e.translated = e.original + ' — 第三章统一译法';
@@ -103,71 +83,64 @@ function makeSampleEntries(preset) {
       }
     });
   } else if (preset === 'mt-disaster') {
-    entries.forEach((e) => {
+    list.forEach((e) => {
       e.status = 'mt';
       e.translated = '¡#$% 鏂版父娴锋磱闆烽洦 乱码般的机器翻译结果 乱码 乱码';
-      e.note = '机翻质量差，需人工紧急介入';
+      e.note = '机翻质量差,需人工紧急介入';
     });
   } else if (preset === 'import') {
-    entries.forEach((e) => {
+    list.forEach((e) => {
       e.status = 'pending';
       e.translated = '';
     });
   }
-
-  return entries;
+  return list;
 }
 
-function ensureSeeded(preset) {
-  stmtDeleteAll.run();
-  const entries = makeSampleEntries(preset);
-  const tx = db.transaction((list) => {
-    for (const e of list) {
-      stmtInsert.run(
-        e.key, e.original, e.translated, e.status, e.chapter, e.note, '',
-        Date.now()
-      );
-    }
-  });
-  tx(entries);
+function seed(preset) {
+  rows = makeSampleEntries(preset || 'sprint');
 }
 
-ensureSeeded('sprint');
+function getStats() {
+  const stats = { total: rows.length, proofread: 0, mt: 0, pending: 0 };
+  rows.forEach((r) => { stats[r.status] = (stats[r.status] || 0) + 1; });
+  return stats;
+}
 
-app.get('/api/translations', (req, res) => {
-  const rows = stmtAll.all();
+seed('sprint');
+
+app.get('/api/translations', (_req, res) => {
   res.json({ total: rows.length, rows });
 });
 
 app.get('/api/translations/:key', (req, res) => {
-  const row = stmtOne.get(req.params.key);
+  const row = rows.find((r) => r.key === req.params.key);
   if (!row) return res.status(404).json({ error: 'not found' });
   res.json(row);
 });
 
 app.post('/api/translations/:key', (req, res) => {
   const { translated, status, note } = req.body || {};
-  const k = req.params.key;
-  stmtUpdate.run(translated || '', status || 'pending', note || '', Date.now(), k);
-  res.json({ ok: true, key: k });
+  const row = rows.find((r) => r.key === req.params.key);
+  if (!row) return res.status(404).json({ error: 'not found' });
+  row.translated = translated || '';
+  row.status = status || 'pending';
+  row.note = note || row.note || '';
+  row.updated_at = Date.now();
+  res.json({ ok: true, key: row.key });
 });
 
 app.post('/api/seed', (req, res) => {
   const { preset } = req.body || {};
-  ensureSeeded(preset || 'sprint');
+  seed(preset);
   res.json({ ok: true, preset });
 });
 
-app.get('/api/stats', (req, res) => {
-  const rows = stmtCount.all();
-  const stats = { total: 0, proofread: 0, mt: 0, pending: 0 };
-  rows.forEach((r) => {
-    stats[r.status] = r.n;
-    stats.total += r.n;
-  });
-  res.json(stats);
+app.get('/api/stats', (_req, res) => {
+  res.json(getStats());
 });
 
 app.listen(PORT, () => {
   console.log(`[Localization Translator] running at http://localhost:${PORT}`);
+  console.log(`  演示状态: sprint / term-conflict / mt-disaster / import`);
 });

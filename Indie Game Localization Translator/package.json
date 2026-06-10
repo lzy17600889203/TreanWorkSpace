@@ -1,7 +1,7 @@
 {
   "name": "indie-game-localization-translator",
   "version": "1.0.0",
-  "description": "汉化组协作翻译工具 - 三栏布局 + Express + SQLite",
+  "description": "汉化组协作翻译工具 - 三栏布局 + Express",
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
@@ -9,7 +9,6 @@
   },
   "dependencies": {
     "express": "^4.19.2",
-    "better-sqlite3": "^11.3.0",
     "cors": "^2.8.5"
   }
 }
