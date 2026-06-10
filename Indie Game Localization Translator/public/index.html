@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <title>Indie Game Localization Translator · 汉化神器</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body data-preset="sprint">
+  <header class="top-bar">
+    <div class="brand">
+      <span class="logo">🎮</span>
+      <div>
+        <h1>Game Localization Translator</h1>
+        <p class="subtitle">汉化组协作翻译工作台 · Vanilla JS + Express + SQLite</p>
+      </div>
+    </div>
+
+    <div class="progress-wrap">
+      <div class="progress-label">
+        <span>全局进度</span>
+        <span id="progress-text">0 / 0</span>
+      </div>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <div class="progress-legend">
+        <span class="dot dot-proofread"></span>已校对
+        <span class="dot dot-mt"></span>机翻
+        <span class="dot dot-pending"></span>待翻译
+      </div>
+    </div>
+
+    <div class="preset-switcher">
+      <span class="preset-label">演示状态:</span>
+      <button class="preset-btn active" data-preset="sprint">冲刺完工</button>
+      <button class="preset-btn" data-preset="term-conflict">术语冲突</button>
+      <button class="preset-btn" data-preset="mt-disaster">机翻灾难</button>
+      <button class="preset-btn" data-preset="import">初始化导入</button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <!-- 左栏: 原文列表 -->
+    <section class="col col-left">
+      <div class="col-header">
+        <h2>原文列表</h2>
+        <div class="col-tools">
+          <input type="text" id="filter-input" placeholder="搜索 Key 或 内容..." />
+          <select id="status-filter">
+            <option value="all">全部</option>
+            <option value="pending">待翻译</option>
+            <option value="mt">机翻</option>
+            <option value="proofread">已校对</option>
+          </select>
+        </div>
+      </div>
+      <ul class="entry-list" id="entry-list"></ul>
+      <div class="col-footer">
+        <kbd>J</kbd>/<kbd>K</kbd> 上一条/下一条 &nbsp;·&nbsp;
+        <kbd>N</kbd>/<kbd>P</kbd> 跳至下一条/上一条未翻译
+      </div>
+    </section>
+
+    <!-- 中栏: 翻译输入 -->
+    <section class="col col-center">
+      <div class="col-header">
+        <h2>翻译工作台</h2>
+        <div class="col-tools">
+          <span id="current-status" class="status-chip">待翻译</span>
+        </div>
+      </div>
+
+      <div class="center-body" id="center-body">
+        <div class="empty-state" id="empty-state">
+          <p>← 从左侧选择一条文本开始翻译</p>
+        </div>
+        <div class="editor" id="editor" style="display:none;">
+          <div class="field-meta">
+            <span class="key-label" id="field-key">—</span>
+            <span class="chapter-label" id="field-chapter">—</span>
+          </div>
+
+          <div class="block">
+            <label>原文 (EN)</label>
+            <div class="original-box" id="original-box"></div>
+            <div class="meta-row">
+              <span id="original-length">0 字符</span>
+            </div>
+          </div>
+
+          <div id="term-bubble" class="term-bubble" style="display:none;">
+            <span class="bubble-icon">⚠️</span>
+            <span class="bubble-text" id="bubble-text"></span>
+          </div>
+
+          <div class="block">
+            <label>译文 (ZH)</label>
+            <textarea id="translated-input" rows="6" placeholder="在此输入中文译文..."></textarea>
+            <div class="meta-row">
+              <span id="translated-length">0 字符</span>
+              <span id="length-warning" class="length-warning" style="display:none;">⚠ 译文字符过多,可能溢出 UI</span>
+            </div>
+          </div>
+
+          <div class="action-row">
+            <button class="btn btn-mt" id="btn-mt">标记为机翻</button>
+            <button class="btn btn-save" id="btn-save">保存并标记校对 ✓</button>
+          </div>
+
+          <div class="shortcuts">
+            <kbd>Ctrl</kbd>+<kbd>S</kbd> 保存校对 ·
+            <kbd>M</kbd> 机翻 ·
+            <kbd>Esc</kbd> 取消编辑
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 右栏: 游戏内截图预览 -->
+    <section class="col col-right">
+      <div class="col-header">
+        <h2>游戏内预览</h2>
+        <div class="col-tools">
+          <span class="tiny">模拟游戏 UI 渲染</span>
+        </div>
+      </div>
+      <div class="preview-frame">
+        <div class="preview-window-title">
+          <span class="title-dots">
+            <span class="dot red"></span>
+            <span class="dot yellow"></span>
+            <span class="dot green"></span>
+          </span>
+          <span class="title-text" id="preview-title">游戏画面预览</span>
+        </div>
+        <div class="preview-body" id="preview-body">
+          <div class="preview-scene" id="preview-scene">
+            <div class="dialogue-box" id="dialogue-box">
+              <div class="dialogue-speaker" id="dialogue-speaker">角色</div>
+              <div class="dialogue-text" id="dialogue-text">请从左侧选择文本以预览其在游戏中的渲染效果。</div>
+            </div>
+          </div>
+          <div class="preview-overlays" id="preview-overlays"></div>
+        </div>
+        <div class="preview-footer">
+          <span id="preview-key">—</span>
+          <span id="preview-status" class="status-chip">待翻译</span>
+        </div>
+      </div>
+
+      <div class="glossary">
+        <h3>术语表 · 最近校对</h3>
+        <ul id="glossary-list">
+          <li>Start New Game → 开始新游戏 (第一章)</li>
+          <li>Crimson Elixir → 深红药剂 (第三章)</li>
+          <li>The Hollow Crown → 空洞王冠 (第三章)</li>
+        </ul>
+      </div>
+    </section>
+  </main>
+
+  <script src="/app.js"></script>
+</body>
+</html>
