@@ -235,6 +235,58 @@
     render();
   }
 
+  // 真正执行机翻：调用后端 /api/translate/:key
+  async function translateCurrent() {
+    const row = state.rows.find((r) => r.key === state.currentKey);
+    if (!row) return;
+    const btn = $('#btn-mt');
+    const originalLabel = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '翻译中...';
+    try {
+      const data = await api('/api/translate/' + encodeURIComponent(row.key), {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+      if (data && data.ok) {
+        // 同步到本地 state
+        const fresh = state.rows.find((r) => r.key === data.key);
+        if (fresh) {
+          fresh.translated = data.translated || '';
+          fresh.status = data.status || 'mt';
+          fresh.note = data.note || '';
+        }
+        const stats = await api('/api/stats');
+        state.stats = stats;
+        render();
+      }
+    } finally {
+      btn.disabled = false;
+      btn.textContent = originalLabel;
+    }
+  }
+
+  // 一键机翻所有未翻译条目
+  async function translateAll() {
+    const btn = $('#btn-mt-all');
+    if (!btn) return;
+    const originalLabel = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = '批量翻译中...';
+    try {
+      await api('/api/translate-all', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      });
+      await loadTranslations();
+    } finally {
+      btn.disabled = false;
+      btn.textContent = originalLabel;
+    }
+  }
+
   function escapeHtml(s) {
     return (s || '').replace(/[&<>"']/g, (c) => ({
       '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
@@ -261,7 +313,9 @@
     });
 
     $('#btn-save').addEventListener('click', () => saveCurrent('proofread'));
-    $('#btn-mt').addEventListener('click', () => saveCurrent('mt'));
+    $('#btn-mt').addEventListener('click', translateCurrent);
+    const btnAll = $('#btn-mt-all');
+    if (btnAll) btnAll.addEventListener('click', translateAll);
 
     document.addEventListener('keydown', (e) => {
       const tag = (e.target.tagName || '').toLowerCase();
@@ -279,7 +333,7 @@
           case 'k': selectIndex(Math.max(0, state.currentIndex - 1)); break;
           case 'n': moveToUntranslated(1); break;
           case 'p': moveToUntranslated(-1); break;
-          case 'm': saveCurrent('mt'); break;
+          case 'm': translateCurrent(); break;
           case 'escape':
             state.currentKey = null;
             state.currentIndex = -1;
