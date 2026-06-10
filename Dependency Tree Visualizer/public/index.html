@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Galaxy Dependency Visualizer - CVE Scanner</title>
+<link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+<div id="app">
+  <header class="topbar">
+    <div class="brand">
+      <span class="logo-dot"></span>
+      <h1>Galaxy<span class="title">依赖星系 · CVE 可视化</h1>
+      <span class="subtitle">为安全强迫症开发者用的工具</span>
+    </div>
+    <div class="controls">
+      <div class="mode-group">
+        <button class="mode-btn active" data-mode="init">初始状态</button>
+        <button class="mode-btn" data-mode="safe">绝对安全</button>
+        <button class="mode-btn" data-mode="dangerous">极度危险</button>
+        <button class="mode-btn" data-mode="conflict">版本冲突</button>
+        <button class="mode-btn" data-mode="normal">混合模式</button>
+      </div>
+      <div class="uploader">
+        <label class="filelabel">
+          <input type="file" id="fileInput" accept=".json" style="display:none">
+          <span>上传 package.json</span>
+        </label>
+        <button id="refreshBtn" class="refresh-btn">重新扫描</button>
+      </div>
+    </div>
+  </header>
+  <div class="main">
+    <aside class="sidebar">
+      <div class="panel">
+        <h2>项目总览</h2>
+        <div class="stat" id="projectName">—</div>
+        <div class="stat-grid">
+          <div class="stat-item"><span class="stat-label">总依赖数</span><span class="stat-value" id="totalCount">0</span></div>
+          <div class="stat-item vuln"><span class="stat-label">漏洞依赖</span><span class="stat-value" id="vulnCount">0</span></div>
+          <div class="stat-item conflict"><span class="stat-label">冲突</span><span class="stat-value" id="conflictCount">0</span></div>
+          <div class="stat-item danger"><span class="stat-label">严重级别</span><span class="stat-value" id="status">—</span></div>
+        </div>
+      </div>
+      <div class="panel">
+        <h2>高危漏洞清单</h2>
+        <div id="vulnList"><div class="empty">暂无数据</div></div>
+      </div>
+      <div class="panel legend-panel">
+        <h2>图例</h2>
+        <div class="legend-item"><span class="dot safe"></span>安全</div>
+        <div class="legend-item"><span class="dot medium"></span>低危 / 中危</div>
+        <div class="legend-item"><span class="dot high"></span>高危</div>
+        <div class="legend-item"><span class="dot critical"></span>极危</div>
+        <div class="legend-item"><span class="dot conflict2"></span>版本冲突</div>
+      </div>
+    </aside>
+    <main class="stage">
+      <div id="galaxyContainer">
+        <svg id="galaxy"></svg>
+        <div id="tooltip" class="tooltip"></div>
+      </div>
+    </main>
+  </div>
+</div>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script src="/app.js"></script>
+</body>
+</html>
