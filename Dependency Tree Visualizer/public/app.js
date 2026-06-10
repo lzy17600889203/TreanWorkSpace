@@ -12,6 +12,7 @@
   let beamInterval = null;
   let rootPulseInterval = null;
   let rootShakeInterval = null;
+  const shakeTimeouts = new Set();
   let galaxyGroup, linkGroup, sectorGroup, nodeGroup, sparkGroup, beamGroup, rootGroup, starGroup;
 
   const COLORS = {
@@ -103,17 +104,35 @@
   }
 
   function clearAnimations() {
+    // 1) 停止所有 setInterval（定时动画源）
     if (animationId) { cancelAnimationFrame(animationId); animationId = null; }
     if (sparkInterval) { clearInterval(sparkInterval); sparkInterval = null; }
     if (beamInterval) { clearInterval(beamInterval); beamInterval = null; }
     if (rootPulseInterval) { clearInterval(rootPulseInterval); rootPulseInterval = null; }
     if (rootShakeInterval) { clearInterval(rootShakeInterval); rootShakeInterval = null; }
-    if (starGroup) starGroup.selectAll('*').remove();
+    // 2) 停止 rootShake 内部排队的 setTimeout
+    if (shakeTimeouts.size) {
+      shakeTimeouts.forEach(t => clearTimeout(t));
+      shakeTimeouts.clear();
+    }
+    // 3) 中断所有 D3 transition（光束/火花 fade-out）
+    try { svg.selectAll('*').interrupt(); } catch (e) {}
+    // 4) 先强制停掉 CSS animation，再移除节点 —— 否则旧图层 CSS 动画会继续播放
+    try {
+      svg.selectAll('*').each(function() {
+        if (this.style) {
+          this.style.animation = 'none';
+          this.style.webkitAnimation = 'none';
+        }
+      });
+    } catch (e) {}
+    // 5) 彻底清空 SVG 下的所有元素（避免多次 render 堆叠 <g>）
+    svg.selectAll('*').remove();
   }
 
   function createBackgroundStars(mode) {
-    if (!starGroup) starGroup = galaxyGroup.append('g').attr('class', 'bg-stars');
-    starGroup.selectAll('*').remove();
+    // galaxyGroup 在 render() 开始时已重置为新 <g>，这里直接挂子节点
+    starGroup = galaxyGroup.append('g').attr('class', 'bg-stars');
     const starCount = 120;
     const twinkleDuration = mode === 'dangerous' ? 0.6 : 3;
     for (let i = 0; i < starCount; i++) {
@@ -415,7 +434,14 @@
           const dx = (Math.random() - 0.5) * 4;
           const dy = (Math.random() - 0.5) * 4;
           parent.setAttribute('transform', `translate(${centerX + dx},${centerY + dy})`);
-          setTimeout(() => { parent.setAttribute('transform', `translate(${centerX},${centerY})`); }, 60);
+          const resetId = setTimeout(() => {
+            // 可能已被 clearAnimations 清掉（元素被移除），先判断 parent 是否仍在 DOM
+            if (parent && parent.parentNode) {
+              parent.setAttribute('transform', `translate(${centerX},${centerY})`);
+            }
+            shakeTimeouts.delete(resetId);
+          }, 60);
+          shakeTimeouts.add(resetId);
         }
       }, 160);
     }
@@ -455,15 +481,16 @@
   }
 
   function render(data) {
+    // 1) 先彻底清掉所有旧定时/动画/SVG 元素（避免多次切换时叠加）
     clearAnimations();
     resize();
     const mode = data.mode || currentMode;
     currentMode = mode;
 
+    // 2) 建一个唯一的 galaxyGroup（clearAnimations 已清空 svg 内所有元素）
     galaxyGroup = svg.append('g').attr('class', 'galaxy-main');
-    if (!galaxyGroup.node()) galaxyGroup = svg.append('g');
 
-    galaxyGroup.selectAll('*').remove();
+    // 3) 子 group 只在此处一次性创建，后续 drawX 都往同一个父 g 里写
     linkGroup = galaxyGroup.append('g').attr('class', 'links');
     sectorGroup = galaxyGroup.append('g').attr('class', 'sectors');
     nodeGroup = galaxyGroup.append('g').attr('class', 'nodes');
