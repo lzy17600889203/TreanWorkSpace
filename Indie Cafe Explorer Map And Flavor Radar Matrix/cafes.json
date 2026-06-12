@@ -1,0 +1,169 @@
+{
+  "nextId": 10,
+  "items": [
+    {
+      "id": 1,
+      "name": "不眠夜精品咖啡",
+      "address": "宝藏街 12 号",
+      "lat": 39.9085,
+      "lng": 116.3974,
+      "rating": 4.7,
+      "acidity": 78,
+      "sweetness": 82,
+      "body": 75,
+      "flavor_tags": [
+        "柑橘",
+        "焦糖",
+        "坚果"
+      ],
+      "blacklisted": false,
+      "highlight": false,
+      "created_at": 1781232938880
+    },
+    {
+      "id": 2,
+      "name": "浅烘研究所",
+      "address": "宝藏街 18 号",
+      "lat": 39.909,
+      "lng": 116.398,
+      "rating": 4.6,
+      "acidity": 85,
+      "sweetness": 70,
+      "body": 68,
+      "flavor_tags": [
+        "茉莉花",
+        "柠檬"
+      ],
+      "blacklisted": false,
+      "highlight": false,
+      "created_at": 1781232938880
+    },
+    {
+      "id": 3,
+      "name": "巷子里的手冲",
+      "address": "宝藏巷 3 号",
+      "lat": 39.9082,
+      "lng": 116.3969,
+      "rating": 4.5,
+      "acidity": 72,
+      "sweetness": 80,
+      "body": 78,
+      "flavor_tags": [
+        "可可",
+        "红糖"
+      ],
+      "blacklisted": false,
+      "highlight": false,
+      "created_at": 1781232938880
+    },
+    {
+      "id": 4,
+      "name": "午夜豆仓",
+      "address": "宝藏街 22 号",
+      "lat": 39.9088,
+      "lng": 116.3977,
+      "rating": 4.4,
+      "acidity": 76,
+      "sweetness": 74,
+      "body": 80,
+      "flavor_tags": [
+        "黑巧克力"
+      ],
+      "blacklisted": false,
+      "highlight": false,
+      "created_at": 1781232938880
+    },
+    {
+      "id": 5,
+      "name": "晨雾咖啡馆",
+      "address": "宝藏巷 7 号",
+      "lat": 39.9093,
+      "lng": 116.397,
+      "rating": 4.3,
+      "acidity": 70,
+      "sweetness": 75,
+      "body": 72,
+      "flavor_tags": [
+        "蜂蜜",
+        "花香"
+      ],
+      "blacklisted": false,
+      "highlight": false,
+      "created_at": 1781232938880
+    },
+    {
+      "id": 6,
+      "name": "荒漠边的一杯",
+      "address": "北区荒漠路 1 号",
+      "lat": 39.922,
+      "lng": 116.412,
+      "rating": 3.8,
+      "acidity": 60,
+      "sweetness": 55,
+      "body": 62,
+      "flavor_tags": [
+        "谷物"
+      ],
+      "blacklisted": false,
+      "highlight": false,
+      "created_at": 1781232938880
+    },
+    {
+      "id": 7,
+      "name": "传奇豆坊 · 旗舰店",
+      "address": "中央大道 88 号",
+      "lat": 39.915,
+      "lng": 116.405,
+      "rating": 5,
+      "acidity": 98,
+      "sweetness": 98,
+      "body": 98,
+      "flavor_tags": [
+        "浆果",
+        "玫瑰",
+        "焦糖",
+        "巧克力",
+        "蜂蜜",
+        "柑橘"
+      ],
+      "blacklisted": false,
+      "highlight": true,
+      "created_at": 1781232938880
+    },
+    {
+      "id": 8,
+      "name": "踩雷警告 · 兑水咖啡",
+      "address": "骗子胡同 66 号",
+      "lat": 39.912,
+      "lng": 116.402,
+      "rating": 1.2,
+      "acidity": 20,
+      "sweetness": 15,
+      "body": 18,
+      "flavor_tags": [
+        "糊味",
+        "焦苦"
+      ],
+      "blacklisted": true,
+      "highlight": false,
+      "created_at": 1781232938880
+    },
+    {
+      "id": 9,
+      "name": "速溶冒充精品",
+      "address": "劣质巷 9 号",
+      "lat": 39.9135,
+      "lng": 116.4085,
+      "rating": 1.8,
+      "acidity": 25,
+      "sweetness": 22,
+      "body": 20,
+      "flavor_tags": [
+        "化工味"
+      ],
+      "blacklisted": true,
+      "highlight": false,
+      "created_at": 1781232938880
+    }
+  ]
+}

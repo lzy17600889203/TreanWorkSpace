@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Indie Cafe Explorer · 咖啡因依赖者打卡神器</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-icon">☕</span>
+      <div>
+        <h1>Indie Cafe Explorer</h1>
+        <p class="subtitle">重度咖啡因依赖者的暗色调打卡地图</p>
+      </div>
+    </div>
+    <div class="stats">
+      <div class="stat"><span class="stat-label">已打卡</span><span id="stat-total" class="stat-num">0</span></div>
+      <div class="stat stat-treasure"><span class="stat-label">宝藏店</span><span id="stat-treasure" class="stat-num">0</span></div>
+      <div class="stat stat-god"><span class="stat-label">神店</span><span id="stat-god" class="stat-num">0</span></div>
+      <div class="stat stat-black"><span class="stat-label">黑名单</span><span id="stat-black" class="stat-num">0</span></div>
+    </div>
+    <div class="legend">
+      <span class="legend-item"><span class="dot dot-normal"></span>普通店</span>
+      <span class="legend-item"><span class="dot dot-treasure"></span>宝藏街区</span>
+      <span class="legend-item"><span class="dot dot-god"></span>高分神店</span>
+      <span class="legend-item"><span class="dot dot-black"></span>黑名单</span>
+    </div>
+  </header>
+
+  <main class="layout">
+    <div id="map" class="map"></div>
+    <aside id="panel" class="panel panel-collapsed">
+      <button id="panel-close" class="panel-close" title="关闭">×</button>
+      <div class="panel-inner" id="panel-inner">
+        <div class="empty-state" id="empty-state">
+          <div class="empty-icon">☕</div>
+          <h2>点击地图上的咖啡杯</h2>
+          <p>查看该店的手冲豆风味雷达图</p>
+          <p class="hint">（酸度 · 甜度 · 醇厚度）</p>
+        </div>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="footer">
+    <span id="port-info">端口: 检测中…</span>
+    <span>· Leaflet + Vanilla JS + Express + SQLite</span>
+  </footer>
+
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="./app.js"></script>
+</body>
+</html>

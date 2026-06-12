@@ -1,0 +1,14 @@
+{
+  "name": "indie-cafe-explorer",
+  "version": "1.0.0",
+  "description": "重度咖啡因依赖者打卡神器 - Leaflet 暗色调本地地图 + 风味雷达图 + Express + SQLite",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.21.0"
+  }
+}
