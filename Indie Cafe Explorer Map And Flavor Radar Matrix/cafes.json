@@ -17,7 +17,7 @@
         "坚果"
       ],
       "blacklisted": false,
-      "highlight": false,
+      "highlight": true,
       "created_at": 1781232938880
     },
     {
@@ -52,7 +52,7 @@
         "可可",
         "红糖"
       ],
-      "blacklisted": false,
+      "blacklisted": true,
       "highlight": false,
       "created_at": 1781232938880
     },
@@ -127,7 +127,7 @@
         "柑橘"
       ],
       "blacklisted": false,
-      "highlight": true,
+      "highlight": false,
       "created_at": 1781232938880
     },
     {
@@ -144,7 +144,7 @@
         "糊味",
         "焦苦"
       ],
-      "blacklisted": true,
+      "blacklisted": false,
       "highlight": false,
       "created_at": 1781232938880
     },
@@ -162,7 +162,7 @@
         "化工味"
       ],
       "blacklisted": true,
-      "highlight": false,
+      "highlight": true,
       "created_at": 1781232938880
     }
   ]

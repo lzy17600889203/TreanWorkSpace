@@ -36,7 +36,7 @@ document.getElementById('map').appendChild(gridOverlay);
 
 function buildMarkerHTML(cafe) {
   const isBlack = !!cafe.blacklisted;
-  const isGod = !!cafe.highlight || cafe.rating >= 4.9;
+  const isGod = !!cafe.highlight;
   // 宝藏街区：评分高 + 非神店 + 非黑名单
   const isTreasure = !isBlack && !isGod && cafe.rating >= 4.3;
 
@@ -83,7 +83,7 @@ function buildMarkerHTML(cafe) {
 }
 
 function createCustomIcon(cafe) {
-  const size = (cafe.highlight || cafe.rating >= 4.9) ? [80, 80] : [44, 44];
+  const size = cafe.highlight ? [80, 80] : [44, 44];
   return L.divIcon({
     className: 'cafe-icon',
     html: buildMarkerHTML(cafe),
@@ -100,7 +100,7 @@ function clearMarkers() {
   cafeMarkers = [];
 }
 
-function renderCafes(list) {
+function renderCafes(list, { fitView = false } = {}) {
   clearMarkers();
   const bounds = [];
 
@@ -120,14 +120,14 @@ function renderCafes(list) {
     bounds.push([cafe.lat, cafe.lng]);
   });
 
-  if (bounds.length) {
+  if (fitView && bounds.length) {
     map.fitBounds(bounds, { padding: [80, 80] });
   }
 
   // 更新统计
   const total = list.length;
   const treasure = list.filter((c) => !c.blacklisted && !c.highlight && c.rating >= 4.3).length;
-  const god = list.filter((c) => c.highlight || c.rating >= 4.9).length;
+  const god = list.filter((c) => c.highlight).length;
   const black = list.filter((c) => c.blacklisted).length;
 
   document.getElementById('stat-total').textContent = total;
@@ -221,7 +221,7 @@ panelClose.addEventListener('click', () => {
 
 function openDetail(cafe) {
   const isBlack = !!cafe.blacklisted;
-  const isGod = !!cafe.highlight || cafe.rating >= 4.9;
+  const isGod = !!cafe.highlight;
 
   let ratingStars = '';
   const starCount = Math.round(cafe.rating);
@@ -294,15 +294,15 @@ async function updateCafe(id, payload) {
   }
 }
 
-async function refreshAll() {
+async function refreshAll({ fitView = false } = {}) {
   try {
     const res = await fetch(API);
     const data = await res.json();
-    renderCafes(data.items);
+    renderCafes(data.items, { fitView });
   } catch (err) {
     console.error(err);
   }
 }
 
 /* ---------------- 启动 ---------------- */
-refreshAll();
+refreshAll({ fitView: true });
