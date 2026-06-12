@@ -1,0 +1,65 @@
+{
+  "vault": {
+    "masterKey": "demo-master-password",
+    "emergencyKey": "EMERGENCY-KEY-2077-RELIC",
+    "lastLoginAt": 1781249054,
+    "status": "deadman",
+    "contacts": [
+      "next-of-kin@cyber-relic.void"
+    ],
+    "deadmanTriggeredAt": 1781249238
+  },
+  "entries": [
+    {
+      "id": 1,
+      "category": "social",
+      "title_enc": "1j0EUeTld15NjKCpp0eP3He6dQqkBLJyZsE0oGaww2wrFpXNnHXm",
+      "title_iv": "Ox/3ziNuWLSrT9dr",
+      "content_enc": "kR6L+nWBF6jRR2FnFaHIToYg9qmkyXjdNYdzjivbbGJdEDwAlb6Ewo4uJW8xo15zU7k8ccaxtCnyOEp6jg7Zl5I7sAyH2xPqt3tMkB/07dW0IvRtD5SrvyiwliRirko=",
+      "content_iv": "UyfSZMPNBPy/mnDi",
+      "encryptedWith": "demo-master-password",
+      "created_at": 1781162654
+    },
+    {
+      "id": 2,
+      "category": "diary",
+      "title_enc": "/B61pOgQdEBpTmIKPLC94XchoiOJIB+zt++5kxEukHxPig==",
+      "title_iv": "PR9/dO3avpTi0AlU",
+      "content_enc": "uJDX8Cs+KUv5+IO0uk2cwuQfrGPTE+0OQFbAnzVN8kS4jRL4oHUw0vGmptAy6YOMz0XP5QWrmH38ySz0OHIHWHABMViGnr7mzty2GW/oCit2wlLP1eGp61YDPmJk4I+KdL2VOJoX3sGXJlewuGdk1EZgJFjpO4iuNxcwN7JTFXQh8Imx+sAqfv5q4jdJ3sjbOGHfHmlxqMQO5fVHiqScs/JnbWQDydrJN7kSJoltLKsam/R35Go=",
+      "content_iv": "U3XXSLhslIvqs9T5",
+      "encryptedWith": "demo-master-password",
+      "created_at": 1781076254
+    },
+    {
+      "id": 3,
+      "category": "mail",
+      "title_enc": "hw3T0C+KaWRQnhjuvzbSwbCWQnrQxr+8B5IAuzMI9XDCbHEHSytaew==",
+      "title_iv": "ResPOGdvkCLO/LjP",
+      "content_enc": "WvlksPjDPvv73MFN9hcv18IvAONxFxmeGQFnXnv5g6IeZG00Rdh/G11kMNq0lhJJemJNnYJjBMapi1Jrf6qOzzqOtK2IN5KBf32bocwmnSi5nsCCuHoVKSL38Sr865pS+IxpC34174XSTQCMsD+J6nlqyBR3d/eHRWY7ImiHpAKNdfYiuu86PV3M9mJuO9TRaxWvXevRbrNaDedNcCEhVnz1BaQx7burSNqaRSSomNYf",
+      "content_iv": "Hbl7Hd5mUYonbV44",
+      "encryptedWith": "demo-master-password",
+      "created_at": 1780989854
+    },
+    {
+      "id": 4,
+      "category": "diary",
+      "title_enc": "4TtveoEsiK4VCyDc/k9Lm0i0YIATmfuOb3nfXlyZY9/SVoxQo0uq8jjHMYA=",
+      "title_iv": "/++ZM0j9FX2H0ZwD",
+      "content_enc": "YjSklWBmtCXVk4O1ex9V0aelvwII5/YI7FR2Dn2W0pmCyRaLYc90NleIPN/8PJFQQxfA8VahaQ==",
+      "content_iv": "7gzvEcJIKmQ6VuYD",
+      "encryptedWith": "demo-master-password",
+      "created_at": 1781249313
+    }
+  ],
+  "mailQueue": [
+    {
+      "id": 1,
+      "recipient": "next-of-kin@cyber-relic.void",
+      "subject": "[CYBER-VAULT] 数字遗嘱通知",
+      "body": "=== CYBER WILL / 数字遗嘱 ===\n触发时间: 2026-06-12T07:27:18.113Z\n系统检测到用户已连续 365 天未登录,死人开关已触发。\n以下是该用户在数字世界留下的遗物,请妥善保管。\n\n---\n\n[SOCIAL] GITHUB / cyber_relic_42\nlogin: cyber_relic_42\nrecovery_email: relic@void.net\n2FA seed: JBSWY3DPEHPK3PXP\n---\n[DIARY] 最后一条日记\n如果有人读到这一段 —— 那说明我已经去了别的地方。\n请帮我照顾窗台的那盆多肉,以及 GitHub 上那个还没写完的 side project。\n---\n[MAIL] 给妈妈的定时邮件\n妈:\n别担心我,我一直过得很好。\n帮我把床底下的硬盘拆下来,里面有我从 16 岁开始写的所有代码。\n—— 你的重度网民儿子\n---",
+      "scheduled_at": 1781249238,
+      "sent_at": 1781249238
+    }
+  ],
+  "nextId": 5
+}
