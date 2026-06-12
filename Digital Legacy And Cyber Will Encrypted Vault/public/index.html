@@ -23,7 +23,7 @@
         <div class="shield-value" id="daysSinceLogin">—</div>
       </div>
     </div>
-    <div class="vault-status" id="vaultStatusTag">状态: FRESH</div>
+    <div class="vault-status" id="vaultStatusTag">状态: FRESH · 全新封存</div>
   </div>
 </header>
 
@@ -71,50 +71,53 @@
         </div>
       </div>
 
-      <div class="countdown-panel" id="countdownPanel">
-        <div class="countdown-label">⚡ DEAD-MAN SWITCH · 死人开关倒计时</div>
-        <div class="countdown-digits" id="countdownDigits">000</div>
-        <div class="countdown-unit">DAYS REMAINING</div>
-        <div class="countdown-bar"><div class="countdown-fill" id="countdownFill"></div></div>
-      </div>
-
-      <div class="keypad-panel">
-        <div class="keypad-title">🔒 主密码 / MASTER PASSCODE</div>
-        <div class="keypad-input-wrap">
-          <input type="password" id="masterPass" placeholder="输入密码解锁 (demo: demo-master-password)" autocomplete="off">
-          <button id="unlockBtn">UNLOCK</button>
+      <div class="right-col">
+        <div class="countdown-panel" id="countdownPanel">
+          <div class="countdown-label">⚡ DEAD-MAN SWITCH · 死人开关倒计时</div>
+          <div class="countdown-digits" id="countdownDigits">365</div>
+          <div class="countdown-unit">DAYS REMAINING</div>
+          <div class="countdown-bar"><div class="countdown-fill" id="countdownFill"></div></div>
         </div>
-        <div class="keypad-hint" id="keypadHint">提示: 演示用密码 demo-master-password</div>
 
-        <div class="emergency-row">
-          <div class="keypad-title small">⚰ 紧急联系人密钥 / EMERGENCY KEY</div>
-          <div class="keypad-input-wrap small">
-            <input type="text" id="emergencyKey" placeholder="EMERGENCY-KEY-2077-RELIC" autocomplete="off">
-            <button id="emergencyBtn" class="emergency">紧急解锁</button>
+        <div class="keypad-panel">
+          <div class="keypad-title">🔒 主密码 / MASTER PASSCODE (回车亦可解锁)</div>
+          <div class="keypad-input-wrap">
+            <input type="password" id="masterPass" placeholder="输入主密码 · 演示: demo-master-password" autocomplete="off">
+            <button id="unlockBtn">UNLOCK</button>
+          </div>
+          <div class="keypad-hint">提示: 输入 demo-master-password 后回车或点击 UNLOCK 即可查看数据库</div>
+
+          <div class="emergency-row">
+            <div class="keypad-title small">⚰ 紧急联系人密钥 / EMERGENCY KEY</div>
+            <div class="keypad-input-wrap small">
+              <input type="text" id="emergencyKey" placeholder="EMERGENCY-KEY-2077-RELIC" autocomplete="off">
+              <button id="emergencyBtn" class="emergency">紧急解锁</button>
+            </div>
+            <div class="keypad-hint">触发后保险箱大门滑开，遗嘱邮件自动入队发送。</div>
           </div>
         </div>
-      </div>
 
-      <div class="demo-panel">
-        <div class="demo-title">▶ 状态演示切换 / STATE DEMO</div>
-        <div class="demo-buttons">
-          <button data-state="fresh" class="demo-btn">全新封存 (0天)</button>
-          <button data-state="secure" class="demo-btn">极度安全 (1天前)</button>
-          <button data-state="warning" class="demo-btn">触发预警 (300天前)</button>
-          <button data-state="deadman" class="demo-btn">紧急解锁 (365天+)</button>
+        <div class="demo-panel">
+          <div class="demo-title">▶ 状态演示切换 / STATE DEMO</div>
+          <div class="demo-buttons">
+            <button data-state="fresh" class="demo-btn">全新封存 (0天)</button>
+            <button data-state="secure" class="demo-btn">极度安全 (1天前)</button>
+            <button data-state="warning" class="demo-btn">触发预警 (300天前)</button>
+            <button data-state="deadman" class="demo-btn">紧急解锁 (365天+)</button>
+          </div>
         </div>
       </div>
     </div>
   </section>
 
-  <section class="data-section" id="dataSection" hidden>
+  <section class="data-section" id="dataSection">
     <div class="data-header">
       <h2>▓ 数据库 / DATA CHAMBER</h2>
       <div class="data-tabs">
-        <button class="tab-btn active" data-cat="social">社交账号</button>
+        <button class="tab-btn active" data-cat="all">全部</button>
+        <button class="tab-btn" data-cat="social">社交账号</button>
         <button class="tab-btn" data-cat="diary">私密日记</button>
         <button class="tab-btn" data-cat="mail">定时邮件</button>
-        <button class="tab-btn" data-cat="all">全部</button>
       </div>
     </div>
 
@@ -129,17 +132,17 @@
       </div>
       <div class="entry-field">
         <label>标题</label>
-        <input type="text" id="entryTitle" placeholder="例如: GitHub 账号">
+        <input type="text" id="entryTitle" placeholder="例如: GitHub 账号 / 给小明的遗嘱">
       </div>
       <div class="entry-field full">
         <label>内容 (AES-256-GCM 加密后存入)</label>
-        <textarea id="entryContent" rows="4" placeholder="账号 / 密码 / 遗言 / 邮件正文..."></textarea>
+        <textarea id="entryContent" rows="4" placeholder="账号、密码、遗言、邮件正文..."></textarea>
       </div>
       <button id="encryptSaveBtn" class="encrypt-btn">☠ 加密并封存</button>
     </div>
 
     <div class="entries-list" id="entriesList">
-      <div class="entries-hint">⚠ 点击条目需输入主密码进行本地解密</div>
+      <div class="entries-hint">◆ 加载中...</div>
     </div>
   </section>
 </main>
@@ -150,9 +153,20 @@
 </footer>
 
 <div class="modal" id="modal" hidden>
-  <div class="modal-body">
+  <div class="modal-body" id="modalBody">
     <div class="modal-title" id="modalTitle">解密内容</div>
-    <pre id="modalContent"></pre>
+
+    <div class="decrypt-block" id="decryptBlock">
+      <div class="modal-hint">此条目已用主密码 AES-256-GCM 加密。</div>
+      <div class="keypad-input-wrap" style="margin-top:12px;">
+        <input type="password" id="modalPass" placeholder="输入主密码解密 · demo-master-password">
+        <button id="modalDecryptBtn">DECRYPT</button>
+      </div>
+      <div class="decrypt-result" id="decryptResult" hidden>
+        <pre id="modalContent"></pre>
+      </div>
+    </div>
+
     <button id="modalClose" class="modal-close">关闭</button>
   </div>
 </div>

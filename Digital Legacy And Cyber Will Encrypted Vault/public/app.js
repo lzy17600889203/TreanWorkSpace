@@ -5,10 +5,15 @@
   const $ = (sel) => document.querySelector(sel);
 
   const stateMap = {
-    secure:   { cls: 'state-secure',   tag: '状态: SECURE · 极度安全',  daysAgo: 1,   shieldColor: 'var(--green)' },
-    warning:  { cls: 'state-warning',  tag: '状态: WARNING · 触发预警',  daysAgo: 300, shieldColor: 'var(--warn)'  },
-    deadman:  { cls: 'state-deadman',  tag: '状态: DEAD-MAN · 紧急解锁', daysAgo: 366, shieldColor: 'var(--danger)'},
-    fresh:    { cls: 'state-fresh',    tag: '状态: FRESH · 全新封存',    daysAgo: 0,   shieldColor: '#aaa'        }
+    secure:  { cls: 'state-secure',  tag: '状态: SECURE · 极度安全', daysAgo: 1 },
+    warning: { cls: 'state-warning', tag: '状态: WARNING · 触发预警', daysAgo: 300 },
+    deadman: { cls: 'state-deadman', tag: '状态: DEAD-MAN · 紧急解锁', daysAgo: 366 },
+    fresh:   { cls: 'state-fresh',   tag: '状态: FRESH · 全新封存', daysAgo: 0 }
+  };
+
+  const DEFAULTS = {
+    masterPassword: 'demo-master-password',
+    emergencyKey: 'EMERGENCY-KEY-2077-RELIC'
   };
 
   async function api(path, opts) {
@@ -21,27 +26,13 @@
     body.classList.add(stateMap[stateName].cls);
     $('#vaultStatusTag').textContent = stateMap[stateName].tag;
 
-    $('#daysSinceLogin').textContent = daysSinceLogin === 0
-      ? '从未登录'
-      : `${daysSinceLogin} 天前`;
+    $('#daysSinceLogin').textContent = daysSinceLogin === 0 ? '从未登录' : `${daysSinceLogin} 天前`;
 
-    const shield = $('#shield');
-    const label = shield.querySelector('.shield-label');
-    const value = shield.querySelector('.shield-value');
-    shield.style.borderColor = stateMap[stateName].shieldColor;
-    shield.style.background = 'rgba(20, 40, 50, 0.35)';
-    label.style.color = stateMap[stateName].shieldColor;
-    value.style.color = stateMap[stateName].shieldColor;
-
-    // 倒计时
     const remaining = Math.max(0, 365 - daysSinceLogin);
     $('#countdownDigits').textContent = String(remaining).padStart(3, '0');
     $('#countdownFill').style.width = `${(remaining / 365) * 100}%`;
 
-    // 内部数据流
-    if (stateName === 'deadman') {
-      startInsideStream();
-    }
+    if (stateName === 'deadman') startInsideStream();
   }
 
   function startInsideStream() {
@@ -81,7 +72,7 @@
     toast._t = setTimeout(() => { el.hidden = true; }, 2800);
   }
 
-  // =================== 状态按钮 ===================
+  // ================= 状态按钮 =================
   document.querySelectorAll('.demo-btn').forEach(btn => {
     btn.addEventListener('click', async () => {
       const state = btn.dataset.state;
@@ -91,40 +82,28 @@
         body: JSON.stringify({ daysAgo: s.daysAgo })
       });
       applyState(state, data.daysSinceLogin);
-      toast(`▶ 已切换至 ${state.toUpperCase()} 状态`, s.shieldColor);
+      toast(`▶ 已切换至 ${state.toUpperCase()} 状态`, state === 'deadman' ? 'var(--danger)' : (state === 'warning' ? 'var(--warn)' : 'var(--green)'));
     });
   });
 
-  // =================== 主密码解锁 ===================
-  $('#unlockBtn').addEventListener('click', async () => {
-    const pwd = $('#masterPass').value;
-    if (!pwd) { toast('⚠ 请输入主密码', 'var(--warn)'); return; }
-
-    try {
-      // 用 Web Crypto 模拟客户端密码校验哈希
-      const buf = new TextEncoder().encode(pwd);
-      const hashBuf = await crypto.subtle.digest('SHA-256', buf);
-      const hash = Array.from(new Uint8Array(hashBuf)).map(b => b.toString(16).padStart(2, '0')).join('');
-
-      $('#lockDial').style.animation = 'spin 0.3s linear 3';
-      toast(`🔐 密码锁校验中... SHA-256: ${hash.slice(0, 16)}...`);
-
-      // 实际演示: 密码只是 "demo-master-password"
-      if (pwd !== 'demo-master-password') {
-        setTimeout(() => toast('✗ 密码错误 · 拒绝访问', 'var(--danger)'), 500);
-        return;
-      }
-      setTimeout(() => {
-        toast('✓ 保险箱解锁成功 · 数据库已开放', 'var(--green)');
-        $('#dataSection').hidden = false;
-        loadEntries();
-      }, 600);
-    } catch (e) {
-      toast('WebCrypto 错误: ' + e.message, 'var(--danger)');
+  // ================= 主密码 UNLOCK =================
+  function tryUnlock(pwd) {
+    if (!pwd) { toast('⚠ 请输入主密码', 'var(--warn)'); return false; }
+    if (pwd !== DEFAULTS.masterPassword) {
+      toast('✗ 密码错误 · 拒绝访问', 'var(--danger)');
+      return false;
     }
+    toast('✓ 保险箱解锁成功 · 数据库已开放', 'var(--green)');
+    loadEntries();
+    return true;
+  }
+
+  $('#unlockBtn').addEventListener('click', () => tryUnlock($('#masterPass').value.trim()));
+  $('#masterPass').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') tryUnlock(e.target.value.trim());
   });
 
-  // =================== 紧急联系人密钥 ===================
+  // 紧急密钥
   $('#emergencyBtn').addEventListener('click', async () => {
     const key = $('#emergencyKey').value.trim();
     if (!key) { toast('⚠ 请输入紧急联系人密钥', 'var(--warn)'); return; }
@@ -132,35 +111,29 @@
       method: 'POST', body: JSON.stringify({ key })
     });
     if (r.ok) {
-      // 触发死人开关
       await api('/api/trigger-deadman', { method: 'POST' });
       applyState('deadman', 366);
-      toast('⚰ 死人开关已触发 · 遗嘱邮件正在发送', 'var(--danger)');
-      $('#dataSection').hidden = false;
       loadEntries();
+      toast('⚰ 死人开关已触发 · 遗嘱邮件正在发送', 'var(--danger)');
     } else {
       toast('✗ 紧急密钥错误', 'var(--danger)');
     }
   });
+  $('#emergencyKey').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') $('#emergencyBtn').click();
+  });
 
-  // =================== 加密封存 ===================
+  // ================= 加密封存新条目 =================
   $('#encryptSaveBtn').addEventListener('click', async () => {
     const category = $('#entryCat').value;
     const title = $('#entryTitle').value.trim();
     const content = $('#entryContent').value.trim();
-    const password = $('#masterPass').value || 'demo-master-password';
+    const password = $('#masterPass').value.trim() || DEFAULTS.masterPassword;
 
     if (!title || !content) {
       toast('⚠ 标题与内容不能为空', 'var(--warn)');
       return;
     }
-
-    // 演示: 使用 Web Crypto 做一次客户端加密再发送
-    try {
-      const key = await deriveClientKey(password);
-      const { ciphertext, iv } = await clientEncrypt(content, key);
-      console.log('[CLIENT WebCrypto] IV:', iv, 'CT:', ciphertext.slice(0, 40) + '...');
-    } catch (e) { console.warn('client crypto skipped:', e.message); }
 
     const r = await api('/api/entries', {
       method: 'POST',
@@ -172,30 +145,14 @@
       toast(`☠ 已加密封存 · AES-256-GCM · ID ${r.id}`, 'var(--green)');
       loadEntries();
     } else {
-      toast('封存失败', 'var(--danger)');
+      toast('封存失败: ' + (r.error || '未知错误'), 'var(--danger)');
     }
   });
 
-  async function deriveClientKey(password) {
-    const enc = new TextEncoder();
-    const keyMat = await crypto.subtle.importKey(
-      'raw', enc.encode(password),
-      { name: 'PBKDF2' }, false, ['deriveKey']
-    );
-    return crypto.subtle.deriveKey(
-      { name: 'PBKDF2', salt: enc.encode('cyber-vault-salt'), iterations: 100000, hash: 'SHA-256' },
-      keyMat, { name: 'AES-GCM', length: 256 }, true, ['encrypt', 'decrypt']
-    );
-  }
-  async function clientEncrypt(text, key) {
-    const iv = crypto.getRandomValues(new Uint8Array(12));
-    const ct = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, new TextEncoder().encode(text));
-    return { ciphertext: btoa(String.fromCharCode(...new Uint8Array(ct))), iv: Array.from(iv).map(b => b.toString(16).padStart(2, '0')).join('') };
-  }
-
-  // =================== 条目列表 ===================
+  // ================= 条目列表 + 解密模态框 =================
   let allEntries = [];
   let currentCat = 'all';
+  let currentEntryId = null;
 
   async function loadEntries() {
     allEntries = await api('/api/entries');
@@ -205,8 +162,8 @@
   function renderEntries() {
     const list = $('#entriesList');
     const filtered = currentCat === 'all' ? allEntries : allEntries.filter(e => e.category === currentCat);
-    if (filtered.length === 0) {
-      list.innerHTML = '<div class="entries-hint">⚠ 暂无封存数据 · 请在上方添加</div>';
+    if (!filtered || filtered.length === 0) {
+      list.innerHTML = '<div class="entries-hint">⚠ 暂无封存数据 · 请在上方添加新条目</div>';
       return;
     }
     list.innerHTML = '';
@@ -216,27 +173,57 @@
       row.dataset.cat = e.category;
       row.innerHTML = `
         <span class="entry-cat">${e.category}</span>
-        <span class="entry-title">▣ 标题已加密 · 点击以主密码解密查看</span>
+        <span class="entry-title">▣ 点击以主密码解密查看 · 记录 ID ${e.id}</span>
         <span class="entry-date">${new Date(e.created_at * 1000).toLocaleString()}</span>
       `;
-      row.addEventListener('click', () => openEntry(e.id));
+      row.addEventListener('click', () => openModal(e.id));
       list.appendChild(row);
     }
   }
 
-  async function openEntry(id) {
-    const pwd = $('#masterPass').value || 'demo-master-password';
-    const r = await api(`/api/entries/${id}/decrypt`, {
-      method: 'POST', body: JSON.stringify({ password: pwd })
-    });
-    if (r.error) { toast('✗ 密码不匹配 · 无法解密', 'var(--danger)'); return; }
-    $('#modalTitle').textContent = `[${r.category}] ${r.title}`;
-    $('#modalContent').textContent = r.content;
+  // 打开模态框 - 带密码输入交互
+  function openModal(id) {
+    currentEntryId = id;
+    $('#modalTitle').textContent = `▣ 解密条目 · ID ${id}`;
+    $('#modalPass').value = $('#masterPass').value || '';
+    $('#modalContent').textContent = '';
+    $('#decryptResult').hidden = true;
     $('#modal').hidden = false;
+    setTimeout(() => $('#modalPass').focus(), 50);
   }
 
-  $('#modalClose').addEventListener('click', () => { $('#modal').hidden = true; });
+  async function modalDecrypt() {
+    if (currentEntryId == null) return;
+    const pwd = $('#modalPass').value.trim() || DEFAULTS.masterPassword;
+    const r = await api(`/api/entries/${currentEntryId}/decrypt`, {
+      method: 'POST', body: JSON.stringify({ password: pwd })
+    });
+    if (r.error) {
+      toast('✗ 密码不匹配 · 无法解密', 'var(--danger)');
+      return;
+    }
+    $('#modalTitle').textContent = `[${r.category}] ${r.title}`;
+    $('#modalContent').textContent = r.content;
+    $('#decryptResult').hidden = false;
+    toast('✓ 解密成功', 'var(--green)');
+  }
 
+  $('#modalDecryptBtn').addEventListener('click', modalDecrypt);
+  $('#modalPass').addEventListener('keydown', (e) => { if (e.key === 'Enter') modalDecrypt(); });
+
+  $('#modalClose').addEventListener('click', () => { $('#modal').hidden = true; currentEntryId = null; });
+
+  // 点击模态框外部遮罩关闭
+  $('#modal').addEventListener('click', (e) => {
+    if (e.target.id === 'modal') { $('#modal').hidden = true; currentEntryId = null; }
+  });
+
+  // Esc 关闭
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !$('#modal').hidden) { $('#modal').hidden = true; currentEntryId = null; }
+  });
+
+  // 分类 tab
   document.querySelectorAll('.tab-btn').forEach(btn => {
     btn.addEventListener('click', () => {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
@@ -246,11 +233,17 @@
     });
   });
 
-  // =================== 初始化 ===================
+  // ================= 初始化 =================
   (async () => {
-    const st = await api('/api/status');
-    // 首次进入, 强制展示 FRESH 状态
-    applyState('fresh', 0);
-    toast('◆ 欢迎来到赛博保险箱 · 点击下方按钮切换演示状态');
+    try {
+      const st = await api('/api/status');
+      applyState('secure', st.daysSinceLogin || 1);
+    } catch (e) {
+      applyState('secure', 1);
+    }
+    loadEntries();
+    toast('◆ 欢迎来到赛博保险箱 · 数据库已加载');
+    // 默认填充主密码, 方便直接回车解密
+    $('#masterPass').value = DEFAULTS.masterPassword;
   })();
 })();
