@@ -80,44 +80,28 @@
 
       // 背景网格
       this.drawGrid();
-      // 零轴
+      // 零轴（基准线，收入向上、支出向下）
       this.drawZeroAxis();
 
-      // 画每一根柱子
-      const ease = v => 1 - Math.pow(1 - v, 3);
-      const alphaEase = ease(this.t);
-
+      const alphaEase = 1 - Math.pow(1 - this.t, 3);
       const cw = this.colWidth();
+      const zeroY = this.y(0);    // 0 基准线的 y 坐标
 
+      // 画每一根柱子：全部从 0 基准线出发
       data.steps.forEach((step, i) => {
         const centerX = this.x(i);
-        const startY = this.y(step.start);
-        const endV = step.start + step.value * alphaEase;
-        const endY = this.y(endV);
+        // 动画后的实际值
+        const val = step.value * alphaEase;
+        const endY = this.y(val);
+        const topY = val >= 0 ? endY : zeroY;
+        const botY = val >= 0 ? zeroY : endY;
+        const height = Math.max(2, Math.abs(endY - zeroY));
 
         const isIncome = step.value > 0;
-        const topY = isIncome ? endY : startY;
-        const botY = isIncome ? startY : endY;
-        const height = Math.max(1, Math.abs(endY - startY));
-
-        // 颜色
         let color, glow;
         if (isIncome) { color = '#06d6a0'; glow = 'rgba(6,214,160,0.35)'; }
         else if (step.is_unnecessary) { color = '#ff6b9d'; glow = 'rgba(255,107,157,0.35)'; }
         else { color = '#ef476f'; glow = 'rgba(239,71,111,0.35)'; }
-
-        // 连接线：从当前柱子末端到下一根柱子起点
-        if (i < data.steps.length - 1) {
-          const nextX = this.x(i + 1);
-          ctx.strokeStyle = 'rgba(168,175,199,0.35)';
-          ctx.setLineDash([4, 4]);
-          ctx.lineWidth = 1;
-          ctx.beginPath();
-          ctx.moveTo(centerX, endY);
-          ctx.lineTo(nextX - cw * 0.6, endY);
-          ctx.stroke();
-          ctx.setLineDash([]);
-        }
 
         // 发光
         ctx.save();
@@ -138,13 +122,13 @@
         ctx.fill();
         ctx.restore();
 
-        // 标签
+        // 金额标签（柱子顶端）
         ctx.save();
         ctx.fillStyle = isIncome ? '#b8f7e0' : (step.is_unnecessary ? '#ffd3e0' : '#ffb3c4');
         ctx.font = '600 11px sans-serif';
         ctx.textAlign = 'center';
-        const labelY = isIncome ? topY - 8 : botY + 14;
-        const valStr = (step.value > 0 ? '+' : '') + step.value.toFixed(0);
+        const labelY = val >= 0 ? topY - 8 : botY + 14;
+        const valStr = (step.value > 0 ? '+' : '') + Math.abs(step.value).toFixed(0);
         ctx.fillText(valStr, centerX, labelY);
 
         // 类别标签（倾斜）
@@ -154,8 +138,7 @@
         ctx.translate(centerX, this.h - this.padding.bottom + 12);
         ctx.rotate(-Math.PI / 8);
         ctx.textAlign = 'right';
-        const cat = step.label.split('：')[0];
-        ctx.fillText(cat, 0, 0);
+        ctx.fillText(step.label, 0, 0);
         ctx.restore();
 
         if (step.is_unnecessary) {
@@ -331,10 +314,10 @@
     drawStateTitle() {
       const { ctx, data } = this;
       const titles = {
-        healthy: { text: '✦ 财务健康状态 ✦', color: '#06d6a0', sub: '阶梯式下降，结余高耸' },
-        impulsive: { text: '⚠ 冲动消费状态 ⚠', color: '#ffd166', sub: '出现大额非必要支出断层' },
-        overspend: { text: '☠ 入不敷出状态 ☠', color: '#ef476f', sub: '结余为负，准备吃土' },
-        payday: { text: '💰 发薪日狂欢状态 💰', color: '#ffd166', sub: '收入直冲云霄，金币掉落' }
+        healthy: { text: '✦ 财务健康状态 ✦', color: '#06d6a0', sub: '收入在 0 基准线上方高耸，支出在下方温和' },
+        impulsive: { text: '⚠ 冲动消费状态 ⚠', color: '#ffd166', sub: '非必要支出柱穿透 0 基准线向下猛长' },
+        overspend: { text: '☠ 入不敷出状态 ☠', color: '#ef476f', sub: '支出总和超过收入，结余柱跌入负数区' },
+        payday: { text: '💰 发薪日狂欢状态 💰', color: '#ffd166', sub: '收入柱直冲云霄，金币从天而降' }
       };
       const t = titles[data.state] || titles.healthy;
       ctx.save();

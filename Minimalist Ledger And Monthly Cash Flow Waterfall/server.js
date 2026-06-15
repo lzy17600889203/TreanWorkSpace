@@ -82,47 +82,68 @@ app.get('/api/waterfall/:yearMonth', (req, res) => {
   const balance = totalIncome - unnecessarySpent - necessarySpent;
   const unnecessaryRatio = totalIncome > 0 ? unnecessarySpent / totalIncome : 0;
 
+  // 每类别聚合为一笔总额：收入从零轴向上生长，支出从零轴向下生长
+  // 前端每列独立从 0 基准线延伸，视觉上分成「正数钱区」和「负数钱区」
   const steps = [];
-  let running = 0;
 
-  const incomeRows = rows.filter(r => r.amount > 0);
-  incomeRows.forEach(r => {
+  // 收入类别（按总额从大到小）
+  const incomeByCat = {};
+  rows.filter(r => r.amount > 0).forEach(r => {
+    if (!incomeByCat[r.category]) incomeByCat[r.category] = { category: r.category, value: 0, note: r.note };
+    incomeByCat[r.category].value += r.amount;
+  });
+  Object.values(incomeByCat).sort((a, b) => b.value - a.value).forEach(c => {
     steps.push({
-      label: r.category + '：+' + r.amount,
-      value: r.amount,
-      start: running,
+      label: c.category,
+      value: c.value,
+      start: 0,               // 从零轴向上生长
       type: 'income',
       is_unnecessary: 0,
-      note: r.note,
-      date: r.date
+      note: '合计 +' + c.value.toFixed(0)
     });
-    running += r.amount;
-  });
-  const expenseRows = rows.filter(r => r.amount < 0);
-  expenseRows.forEach(r => {
-    const absVal = Math.abs(r.amount);
-    steps.push({
-      label: r.category + '：-' + absVal,
-      value: -absVal,
-      start: running,
-      type: 'expense',
-      is_unnecessary: r.is_unnecessary,
-      note: r.note,
-      date: r.date
-    });
-    running -= absVal;
   });
 
-  // 状态判定：
-  // 1. 非必要支出占比 > 30% → 冲动消费（无论结余正负）
-  // 2. 结余 < 0 → 入不敷出
-  // 3. 单笔大额收入（>=15000）且有多笔收入 → 发薪日狂欢
-  // 4. 其他 → 健康
-  const bigIncome = incomeRows.some(r => r.amount >= 15000);
+  // 必要支出（从零轴向下生长）
+  const necExpByCat = {};
+  rows.filter(r => r.amount < 0 && !r.is_unnecessary).forEach(r => {
+    if (!necExpByCat[r.category]) necExpByCat[r.category] = { category: r.category, value: 0, note: r.note };
+    necExpByCat[r.category].value += Math.abs(r.amount);
+  });
+  Object.values(necExpByCat).sort((a, b) => b.value - a.value).forEach(c => {
+    steps.push({
+      label: c.category,
+      value: -c.value,
+      start: 0,               // 从零轴向下生长
+      type: 'expense',
+      is_unnecessary: 0,
+      note: '合计 -' + c.value.toFixed(0)
+    });
+  });
+
+  // 非必要支出（从零轴向下生长，独立列）
+  const unnExpByCat = {};
+  rows.filter(r => r.amount < 0 && r.is_unnecessary).forEach(r => {
+    if (!unnExpByCat[r.category]) unnExpByCat[r.category] = { category: r.category, value: 0, note: r.note };
+    unnExpByCat[r.category].value += Math.abs(r.amount);
+  });
+  Object.values(unnExpByCat).sort((a, b) => b.value - a.value).forEach(c => {
+    steps.push({
+      label: c.category,
+      value: -c.value,
+      start: 0,               // 从零轴向下生长
+      type: 'expense',
+      is_unnecessary: 1,
+      note: '合计 -' + c.value.toFixed(0)
+    });
+  });
+
+  // 状态判定
+  const bigIncome = Object.values(incomeByCat).some(c => c.value >= 15000);
+  const incomeCount = Object.keys(incomeByCat).length;
   let state;
   if (balance < 0) state = 'overspend';
   else if (unnecessaryRatio > 0.3) state = 'impulsive';
-  else if (bigIncome && incomeRows.length >= 2) state = 'payday';
+  else if (bigIncome && incomeCount >= 2) state = 'payday';
   else state = 'healthy';
 
   let finalState;
