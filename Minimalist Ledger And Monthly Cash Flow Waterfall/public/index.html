@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>月光族财务清醒器</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>💰 月光族财务清醒器</h1>
+      <p class="subtitle">一笔一笔看清楚：从月初工资到月底结余的现金流水瀑布</p>
+    </header>
+
+    <div class="controls">
+      <div class="control-group">
+        <label>选择月份：</label>
+        <select id="monthSelect"></select>
+        <button id="refreshBtn" class="btn btn-sm">刷新</button>
+      </div>
+      <div class="control-group">
+        <span id="stateBadge" class="badge">加载中...</span>
+        <button id="seedDemoBtn" class="btn btn-ghost">加载演示数据</button>
+      </div>
+    </div>
+
+    <div class="summary-cards" id="summaryCards"></div>
+
+    <div class="chart-wrap">
+      <canvas id="waterfall" width="1100" height="560"></canvas>
+      <div class="legend">
+        <span><i class="dot green"></i> 收入</span>
+        <span><i class="dot red"></i> 必要支出</span>
+        <span><i class="dot pink"></i> 非必要支出</span>
+        <span><i class="dot gray"></i> 结余（干瘪）</span>
+      </div>
+    </div>
+
+    <div class="panels">
+      <section class="panel">
+        <h2>➕ 新增一笔记账</h2>
+        <form id="txForm">
+          <div class="row">
+            <label>日期 <input type="date" name="date" required></label>
+            <label>金额 <input type="number" name="amount" step="0.01" required placeholder="收入为正，支出为负"></label>
+          </div>
+          <div class="row">
+            <label>类别 <input type="text" name="category" required placeholder="如：工资 / 房租 / 奶茶"></label>
+            <label>备注 <input type="text" name="note" placeholder="可选"></label>
+          </div>
+          <div class="row row-single">
+            <label class="check">
+              <input type="checkbox" name="is_unnecessary">
+              标记为非必要支出（如奶茶、游戏充值）
+            </label>
+          </div>
+          <button type="submit" class="btn btn-primary">保存这一笔</button>
+        </form>
+      </section>
+
+      <section class="panel">
+        <h2>📒 本月流水明细</h2>
+        <table id="txTable">
+          <thead>
+            <tr>
+              <th>日期</th>
+              <th>类别</th>
+              <th>备注</th>
+              <th class="right">金额</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </section>
+    </div>
+
+    <footer>
+      <p>每一笔支出，都是对未来自己的投票。理智一点，对自己好一点。</p>
+    </footer>
+  </div>
+
+  <script src="waterfall.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,213 @@
+{
+  "transactions": [
+    {
+      "id": 1,
+      "date": "2026-06-01",
+      "amount": 12000,
+      "category": "工资",
+      "note": "六月工资",
+      "is_unnecessary": 0
+    },
+    {
+      "id": 2,
+      "date": "2026-06-05",
+      "amount": -3500,
+      "category": "房租",
+      "note": "必要",
+      "is_unnecessary": 0
+    },
+    {
+      "id": 3,
+      "date": "2026-06-08",
+      "amount": -1500,
+      "category": "餐饮",
+      "note": "正餐",
+      "is_unnecessary": 0
+    },
+    {
+      "id": 4,
+      "date": "2026-06-10",
+      "amount": -800,
+      "category": "交通",
+      "note": "通勤",
+      "is_unnecessary": 0
+    },
+    {
+      "id": 5,
+      "date": "2026-06-12",
+      "amount": -700,
+      "category": "水电网",
+      "note": "必要",
+      "is_unnecessary": 0
+    },
+    {
+      "id": 6,
+      "date": "2026-06-15",
+      "amount": -500,
+      "category": "奶茶",
+      "note": "每周一次",
+      "is_unnecessary": 1
+    },
+    {
+      "id": 7,
+      "date": "2026-05-01",
+      "amount": 15000,
+      "category": "工资",
+      "note": "五月工资",
+      "is_unnecessary": 0
+    },
+    {
+      "id": 8,
+      "date": "2026-05-05",
+      "amount": -3500,
+      "category": "房租",
+      "note": "",
+      "is_unnecessary": 0
+    },
+    {
+      "id": 9,
+      "date": "2026-05-08",
+      "amount": -1500,
+      "category": "餐饮",
+      "note": "",
+      "is_unnecessary": 0
+    },
+    {
+      "id": 10,
+      "date": "2026-05-10",
+      "amount": -4500,
+      "category": "游戏充值",
+      "note": "冲动氪金",
+      "is_unnecessary": 1
+    },
+    {
+      "id": 11,
+      "date": "2026-05-12",
+      "amount": -1200,
+      "category": "奶茶零食",
+      "note": "每天一杯",
+      "is_unnecessary": 1
+    },
+    {
+      "id": 12,
+      "date": "2026-05-15",
+      "amount": -800,
+      "category": "娱乐",
+      "note": "KTV聚餐",
+      "is_unnecessary": 1
+    },
+    {
+      "id": 13,
+      "date": "2026-04-01",
+      "amount": 10000,
+      "category": "工资",
+      "note": "四月工资",
+      "is_unnecessary": 0
+    },
+    {
+      "id": 14,
+      "date": "2026-04-03",
+      "amount": -3200,
+      "category": "房租",
+      "note": "",
+      "is_unnecessary": 0
+    },
+    {
+      "id": 15,
+      "date": "2026-04-05",
+      "amount": -1500,
+      "category": "餐饮",
+      "note": "",
+      "is_unnecessary": 0
+    },
+    {
+      "id": 16,
+      "date": "2026-04-08",
+      "amount": -2000,
+      "category": "购物",
+      "note": "名牌包",
+      "is_unnecessary": 1
+    },
+    {
+      "id": 17,
+      "date": "2026-04-10",
+      "amount": -3000,
+      "category": "游戏充值",
+      "note": "大保底",
+      "is_unnecessary": 1
+    },
+    {
+      "id": 18,
+      "date": "2026-04-15",
+      "amount": -1500,
+      "category": "娱乐",
+      "note": "",
+      "is_unnecessary": 1
+    },
+    {
+      "id": 19,
+      "date": "2026-04-18",
+      "amount": -2500,
+      "category": "奶茶零食",
+      "note": "",
+      "is_unnecessary": 1
+    },
+    {
+      "id": 20,
+      "date": "2026-04-20",
+      "amount": -1800,
+      "category": "直播打赏",
+      "note": "",
+      "is_unnecessary": 1
+    },
+    {
+      "id": 21,
+      "date": "2026-03-01",
+      "amount": 18000,
+      "category": "工资",
+      "note": "三月工资",
+      "is_unnecessary": 0
+    },
+    {
+      "id": 22,
+      "date": "2026-03-01",
+      "amount": 5000,
+      "category": "季度奖金",
+      "note": "老板发的！",
+      "is_unnecessary": 0
+    },
+    {
+      "id": 23,
+      "date": "2026-03-05",
+      "amount": -3500,
+      "category": "房租",
+      "note": "",
+      "is_unnecessary": 0
+    },
+    {
+      "id": 24,
+      "date": "2026-03-08",
+      "amount": -1500,
+      "category": "餐饮",
+      "note": "",
+      "is_unnecessary": 0
+    },
+    {
+      "id": 25,
+      "date": "2026-03-10",
+      "amount": -500,
+      "category": "交通",
+      "note": "",
+      "is_unnecessary": 0
+    },
+    {
+      "id": 26,
+      "date": "2026-03-15",
+      "amount": -1200,
+      "category": "水电网",
+      "note": "",
+      "is_unnecessary": 0
+    }
+  ],
+  "nextId": 27
+}
