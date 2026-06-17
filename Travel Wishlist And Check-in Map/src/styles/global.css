@@ -74,7 +74,7 @@ body {
 }
 
 .map-sidebar {
-  width: 260px;
+  width: 280px;
   flex-shrink: 0;
   background: rgba(255, 255, 255, 0.08);
   backdrop-filter: blur(10px);
@@ -90,6 +90,82 @@ body {
   margin-bottom: 12px;
   padding-bottom: 8px;
   border-bottom: 1px solid rgba(255, 215, 0, 0.2);
+}
+
+.btn-add {
+  width: 100%;
+  margin-bottom: 12px;
+  flex: 0 0 auto;
+  padding: 12px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.pending-panel {
+  background: rgba(255, 215, 0, 0.1);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin-bottom: 12px;
+}
+
+.pending-title {
+  font-size: 12px;
+  color: #ffd700;
+  margin-bottom: 8px;
+}
+
+.pending-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.pending-actions .btn {
+  flex: 1;
+  padding: 6px 10px;
+  font-size: 11px;
+}
+
+.name-form {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+}
+
+.form-title {
+  font-size: 12px;
+  color: #ffd700;
+  margin-bottom: 8px;
+}
+
+.name-input {
+  width: 100%;
+  padding: 10px 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  border-radius: 6px;
+  color: #fff;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s ease;
+}
+
+.name-input:focus {
+  border-color: #ffd700;
+  box-shadow: 0 0 0 3px rgba(255, 215, 0, 0.15);
+}
+
+.name-input::placeholder {
+  color: #6b7280;
+}
+
+.form-hint {
+  font-size: 10px;
+  color: #a0aec0;
+  margin-top: 6px;
+  margin-bottom: 10px;
+  text-align: center;
 }
 
 .place-list {
@@ -125,17 +201,29 @@ body {
 .place-info {
   display: flex;
   flex-direction: column;
+  flex: 1;
+  min-width: 0;
 }
 
 .place-name {
   font-size: 14px;
   font-weight: 500;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .place-status {
   font-size: 11px;
   color: #a0aec0;
   margin-top: 2px;
+}
+
+.place-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
 }
 
 .place-action {
@@ -148,6 +236,8 @@ body {
   justify-content: center;
   border-radius: 50%;
   transition: all 0.2s ease;
+  cursor: pointer;
+  flex-shrink: 0;
 }
 
 .place-action.check {
@@ -165,6 +255,37 @@ body {
 .place-action.trophy {
   color: #ffd700;
   filter: drop-shadow(0 0 4px #ffd700);
+}
+
+.delete-btn {
+  width: 24px;
+  height: 24px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  color: #a0aec0;
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.delete-btn:hover {
+  background: rgba(230, 57, 70, 0.2);
+  border-color: #e63946;
+  color: #e63946;
+}
+
+.empty-state {
+  padding: 20px;
+  text-align: center;
+  color: #a0aec0;
+  font-size: 12px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
 }
 
 .stats-bar {
@@ -202,6 +323,35 @@ body {
   text-align: center;
   margin-bottom: 16px;
   animation: warning-pulse 2s ease-in-out infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+}
+
+.add-banner {
+  background: linear-gradient(90deg, rgba(255, 215, 0, 0.15), rgba(255, 200, 0, 0.1));
+  border-color: rgba(255, 215, 0, 0.4);
+  color: #ffd700;
+  animation: add-pulse 2s ease-in-out infinite;
+}
+
+@keyframes add-pulse {
+  0%, 100% { opacity: 0.9; }
+  50% { opacity: 1; box-shadow: 0 0 20px rgba(255, 215, 0, 0.3); }
+}
+
+.add-banner .btn {
+  flex: 0 0 auto;
+  padding: 6px 12px;
+  font-size: 11px;
+  background: rgba(255, 215, 0, 0.15);
+  border: 1px solid rgba(255, 215, 0, 0.3);
+  color: #ffd700;
+}
+
+.add-banner .btn:hover {
+  background: rgba(255, 215, 0, 0.25);
 }
 
 @keyframes warning-pulse {
@@ -224,6 +374,7 @@ body {
   font-weight: 500;
   cursor: pointer;
   transition: all 0.2s ease;
+  font-family: inherit;
 }
 
 .btn-primary {
@@ -231,9 +382,14 @@ body {
   color: #2d3748;
 }
 
-.btn-primary:hover {
+.btn-primary:hover:not(:disabled) {
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+}
+
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .btn-ghost {
@@ -243,6 +399,12 @@ body {
 
 .btn-ghost:hover {
   background: rgba(255, 255, 255, 0.2);
+}
+
+.btn-small {
+  flex: 0 0 auto;
+  padding: 6px 12px;
+  font-size: 11px;
 }
 
 .legend {
@@ -271,7 +433,7 @@ body {
   }
   .map-sidebar {
     width: 100%;
-    max-height: 240px;
+    max-height: 280px;
   }
   .app-title {
     font-size: 22px;

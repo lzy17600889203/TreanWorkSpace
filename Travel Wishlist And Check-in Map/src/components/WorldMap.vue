@@ -1,10 +1,13 @@
 <template>
-  <div class="map-wrapper" :class="{ 'map-dim': isDim }">
+  <div class="map-wrapper" :class="{ 'map-dim': isDim, 'map-add-mode': addMode }">
     <svg
+      ref="svgEl"
       class="world-map"
+      :class="{ 'cursor-crosshair': addMode }"
       viewBox="0 0 900 550"
       preserveAspectRatio="xMidYMid meet"
       xmlns="http://www.w3.org/2000/svg"
+      @click="handleMapClick"
     >
       <defs>
         <linearGradient id="oceanGrad" x1="0%" y1="0%" x2="0%" y2="100%">
@@ -50,7 +53,7 @@
         />
       </g>
 
-      <g class="markers">
+      <g class="markers" @click.stop>
         <template v-for="place in places" :key="place.id">
           <WishFlag
             v-if="place.status === 'wish'"
@@ -70,23 +73,98 @@
         </template>
       </g>
 
+      <g v-if="addMode && hoverPos" class="crosshair">
+        <line :x1="hoverPos.x - 15" :y1="hoverPos.y" :x2="hoverPos.x - 5" :y2="hoverPos.y" stroke="#ffd700" stroke-width="2" />
+        <line :x1="hoverPos.x + 5" :y1="hoverPos.y" :x2="hoverPos.x + 15" :y2="hoverPos.y" stroke="#ffd700" stroke-width="2" />
+        <line :x1="hoverPos.x" :y1="hoverPos.y - 15" :x2="hoverPos.x" :y2="hoverPos.y - 5" stroke="#ffd700" stroke-width="2" />
+        <line :x1="hoverPos.x" :y1="hoverPos.y + 5" :x2="hoverPos.x" :y2="hoverPos.y + 15" stroke="#ffd700" stroke-width="2" />
+        <circle :cx="hoverPos.x" :cy="hoverPos.y" r="6" fill="none" stroke="#ffd700" stroke-width="2" stroke-dasharray="4 3">
+          <animateTransform attributeName="transform" type="rotate" from="0" to="360" :dur="'4s'" repeatCount="indefinite" />
+        </circle>
+      </g>
+
+      <g v-if="addMode" class="add-hint">
+        <rect x="370" y="10" width="160" height="28" rx="14" fill="#ffd700" fill-opacity="0.15" stroke="#ffd700" stroke-width="1" />
+        <text x="450" y="29" text-anchor="middle" font-size="12" fill="#ffd700" font-weight="600">点击地图任意位置选点</text>
+      </g>
+
       <RainOverlay v-if="isDim" />
     </svg>
   </div>
 </template>
 
 <script setup>
+import { ref } from 'vue'
 import { continents } from '../data/mapData.js'
 import WishFlag from './WishFlag.vue'
 import TrophyMarker from './TrophyMarker.vue'
 import RainOverlay from './RainOverlay.vue'
 
-defineProps({
+const props = defineProps({
   places: { type: Array, required: true },
-  isDim: { type: Boolean, default: false }
+  isDim: { type: Boolean, default: false },
+  addMode: { type: Boolean, default: false }
 })
 
-const emit = defineEmits(['checkIn', 'undo'])
+const emit = defineEmits(['checkIn', 'undo', 'pickLocation'])
+
+const svgEl = ref(null)
+const hoverPos = ref(null)
+
+function handleMapClick(event) {
+  if (!props.addMode) return
+  if (!svgEl.value) return
+
+  const rect = svgEl.value.getBoundingClientRect()
+  const clickX = event.clientX - rect.left
+  const clickY = event.clientY - rect.top
+
+  const scaleX = 900 / rect.width
+  const scaleY = 550 / rect.height
+
+  const viewBoxX = Math.round(clickX * scaleX)
+  const viewBoxY = Math.round(clickY * scaleY)
+
+  const clampedX = Math.max(15, Math.min(885, viewBoxX))
+  const clampedY = Math.max(40, Math.min(530, viewBoxY))
+
+  emit('pickLocation', { x: clampedX, y: clampedY })
+}
+
+function handleMouseMove(event) {
+  if (!props.addMode || !svgEl.value) return
+  const rect = svgEl.value.getBoundingClientRect()
+  const scaleX = 900 / rect.width
+  const scaleY = 550 / rect.height
+  const x = Math.round((event.clientX - rect.left) * scaleX)
+  const y = Math.round((event.clientY - rect.top) * scaleY)
+  hoverPos.value = { x: Math.max(15, Math.min(885, x)), y: Math.max(40, Math.min(530, y)) }
+}
+
+function handleMouseLeave() {
+  hoverPos.value = null
+}
+
+if (svgEl.value) {
+  svgEl.value.addEventListener('mousemove', handleMouseMove)
+  svgEl.value.addEventListener('mouseleave', handleMouseLeave)
+}
+
+import { onMounted, onUnmounted } from 'vue'
+
+onMounted(() => {
+  if (svgEl.value) {
+    svgEl.value.addEventListener('mousemove', handleMouseMove)
+    svgEl.value.addEventListener('mouseleave', handleMouseLeave)
+  }
+})
+
+onUnmounted(() => {
+  if (svgEl.value) {
+    svgEl.value.removeEventListener('mousemove', handleMouseMove)
+    svgEl.value.removeEventListener('mouseleave', handleMouseLeave)
+  }
+})
 </script>
 
 <style scoped>
@@ -98,10 +176,16 @@ const emit = defineEmits(['checkIn', 'undo'])
   box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
   transition: filter 1.5s ease;
   background: #3d8bb5;
+  position: relative;
 }
 
 .map-dim {
   filter: brightness(0.55) saturate(0.7) contrast(1.1);
+}
+
+.map-add-mode {
+  outline: 2px dashed #ffd700;
+  outline-offset: -4px;
 }
 
 .world-map {
@@ -110,11 +194,37 @@ const emit = defineEmits(['checkIn', 'undo'])
   display: block;
 }
 
+.cursor-crosshair {
+  cursor: crosshair;
+}
+
 .continent {
   transition: fill 0.3s ease;
 }
 
 .continent:hover {
   filter: brightness(1.1);
+}
+
+.crosshair {
+  pointer-events: none;
+}
+
+.add-hint rect {
+  animation: hint-pulse 2s ease-in-out infinite;
+}
+
+@keyframes hint-pulse {
+  0%, 100% { fill-opacity: 0.15; }
+  50% { fill-opacity: 0.4; }
+}
+
+.add-hint text {
+  animation: hint-text 2s ease-in-out infinite;
+}
+
+@keyframes hint-text {
+  0%, 100% { opacity: 0.9; }
+  50% { opacity: 1; }
 }
 </style>
