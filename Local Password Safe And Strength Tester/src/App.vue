@@ -16,63 +16,75 @@
       </div>
     </div>
 
-    <div class="auth-view" v-if="!isUnlocked">
-      <VaultDoor :is-unlocked="isUnlocked" :spinning="dialSpinning">
-        <div class="auth-panel">
-          <div class="auth-head">
-            <div class="auth-icon">🔑</div>
-            <h2>{{ isFirstTime ? '设置主密码' : '请输入主密码' }}</h2>
-            <p v-if="isFirstTime">
-              这是你第一次使用。主密码是解锁保险箱的唯一钥匙，<br>
-              请务必牢记！<strong style="color:#ff6b8a;">忘记无法找回。</strong>
-            </p>
-            <p v-else>
-              所有密码都用主密码 AES 加密后，保存在你电脑的本地存储中。
-            </p>
-          </div>
+    <!-- 未解锁：装饰保险箱 + 独立输入面板 -->
+    <div v-if="!isUnlocked" class="auth-view">
+      <VaultLock
+        :opening="openingAnim"
+        :spinning="dialSpinning"
+        :is-first-time="isFirstTime"
+      />
 
-          <div class="master-input-wrap">
+      <div class="auth-card">
+        <h2 class="auth-title">
+          {{ isFirstTime ? '🛡️ 设置主密码' : '🔑 解锁保险箱' }}
+        </h2>
+        <p class="auth-desc" v-if="isFirstTime">
+          主密码是解锁保险箱的唯一钥匙，请务必牢记。<br>
+          <strong style="color:#ff6b8a">忘记无法找回</strong>，建议使用大小写 + 数字 + 符号的强密码。
+        </p>
+        <p class="auth-desc" v-else>
+          所有密码都用主密码 AES 加密，仅保存在本浏览器的 LocalStorage 中。
+        </p>
+
+        <div class="field-row">
+          <label>主密码</label>
+          <div class="input-wrap">
             <input
               ref="masterInput"
               v-model="masterPassword"
               :type="showMaster ? 'text' : 'password'"
-              :placeholder="isFirstTime ? '设置一个强主密码...' : '输入你的主密码...'"
+              :placeholder="isFirstTime ? '请设置一个强密码...' : '请输入你的主密码...'"
               @keyup.enter="unlock"
               autocomplete="current-password"
             />
-            <button class="eye-btn" @click="showMaster = !showMaster">
+            <button class="eye-btn" @click="showMaster = !showMaster" :title="showMaster ? '隐藏' : '显示'">
               {{ showMaster ? '🙈' : '👁️' }}
             </button>
           </div>
-
-          <StrengthMeter v-if="isFirstTime || masterPassword" :analysis="masterAnalysis" />
-
-          <div v-if="isFirstTime" class="confirm-wrap">
-            <input
-              v-model="masterConfirm"
-              :type="showMaster ? 'text' : 'password'"
-              placeholder="再次输入确认..."
-              @keyup.enter="unlock"
-            />
-          </div>
-
-          <div v-if="errorMsg" class="error-msg">{{ errorMsg }}</div>
-
-          <button class="unlock-btn" :class="{ spinning: dialSpinning }" @click="unlock">
-            <span class="unlock-inner">
-              <span class="lock-icon">{{ isFirstTime ? '🛡️' : '🔑' }}</span>
-              <span>{{ isFirstTime ? '创建保险箱' : '解锁保险箱' }}</span>
-            </span>
-          </button>
-
-          <div v-if="hasVault && !isFirstTime" class="danger-zone">
-            <button class="wipe-btn" @click="wipeAll">⚠️ 清空所有数据重置</button>
-          </div>
         </div>
-      </VaultDoor>
+
+        <StrengthMeter :analysis="masterAnalysis" class="strength-slot" />
+
+        <div class="field-row" v-if="isFirstTime">
+          <label>再次确认</label>
+          <input
+            v-model="masterConfirm"
+            type="password"
+            placeholder="再输入一次以确认"
+            @keyup.enter="unlock"
+          />
+        </div>
+
+        <div v-if="errorMsg" class="error-msg">❌ {{ errorMsg }}</div>
+
+        <button class="unlock-btn" :class="{ loading: dialSpinning }" @click="unlock">
+          <template v-if="dialSpinning">
+            🔄 验证中...
+          </template>
+          <template v-else>
+            {{ isFirstTime ? '🛡️ 创建保险箱' : '🔑 解锁保险箱' }}
+          </template>
+        </button>
+
+        <div v-if="hasVault && !isFirstTime" class="danger-zone">
+          <span style="opacity:.5">或</span>
+          <button class="wipe-btn" @click="wipeAll">⚠️ 清空所有数据重置</button>
+        </div>
+      </div>
     </div>
 
-    <div class="vault-view" v-else>
+    <!-- 已解锁：保险箱门已打开，内含密码列表 -->
+    <div v-else class="vault-view">
       <VaultDoor :is-unlocked="true">
         <PasswordList
           :entries="displayEntries"
@@ -99,6 +111,7 @@
 
 <script setup>
 import { ref, reactive, computed, onMounted, nextTick } from 'vue'
+import VaultLock from './components/VaultLock.vue'
 import VaultDoor from './components/VaultDoor.vue'
 import StrengthMeter from './components/StrengthMeter.vue'
 import PasswordList from './components/PasswordList.vue'
@@ -116,6 +129,7 @@ const masterKeyCache = ref('')
 const showMaster = ref(false)
 const errorMsg = ref('')
 const dialSpinning = ref(false)
+const openingAnim = ref(false)
 const searchTerm = ref('')
 const masterInput = ref(null)
 
@@ -189,7 +203,7 @@ function unlock() {
 
   if (isFirstTime.value) {
     if (pwd.length < 6) {
-      errorMsg.value = '主密码至少 6 位，建议使用大小写 + 符号'
+      errorMsg.value = '主密码至少 6 位，建议使用大小写 + 数字 + 符号'
       playError()
       return
     }
@@ -204,33 +218,39 @@ function unlock() {
       masterKeyCache.value = pwd
       entries.splice(0, entries.length, ...seedEntries())
       doEncryptSave()
+      hasVault.value = true
+      isFirstTime.value = false
+      openingAnim.value = true
       playMetalClank()
       playSuccess()
       setTimeout(() => {
         isUnlocked.value = true
         dialSpinning.value = false
+        openingAnim.value = false
         masterPassword.value = ''
         masterConfirm.value = ''
       }, 1300)
-    }, 300)
+    }, 600)
   } else {
     dialSpinning.value = true
     playClick()
     setTimeout(() => {
       const data = loadVault(pwd)
       if (!data) {
-        errorMsg.value = '❌ 主密码错误，保险箱无法打开'
+        errorMsg.value = '主密码错误，保险箱无法打开'
         playError()
         dialSpinning.value = false
         return
       }
       masterKeyCache.value = pwd
       entries.splice(0, entries.length, ...(data.entries || []))
+      openingAnim.value = true
       playMetalClank()
       playSuccess()
       setTimeout(() => {
         isUnlocked.value = true
         dialSpinning.value = false
+        openingAnim.value = false
         masterPassword.value = ''
       }, 1300)
     }, 500)
@@ -271,6 +291,9 @@ function wipeAll() {
     hasVault.value = false
     isUnlocked.value = false
     errorMsg.value = ''
+    nextTick(() => {
+      if (masterInput.value) masterInput.value.focus()
+    })
   }
 }
 </script>
@@ -356,67 +379,83 @@ function wipeAll() {
   animation: pulse 1.5s infinite;
 }
 
-.pulse-dot.red {
-  background: #ff4757;
-}
+.pulse-dot.red { background: #ff4757; }
 
 @keyframes pulse {
   0%, 100% { box-shadow: 0 0 0 0 rgba(46, 213, 115, 0.7); }
   50% { box-shadow: 0 0 0 8px rgba(46, 213, 115, 0); }
 }
 
-.auth-view,
-.vault-view { position: relative; }
-
-.auth-panel { padding: 8px 4px; }
-
-.auth-head {
-  text-align: center;
-  margin-bottom: 22px;
+.auth-view {
+  max-width: 560px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
 }
 
-.auth-icon {
-  font-size: 48px;
-  margin-bottom: 8px;
+.auth-card {
+  background: linear-gradient(180deg, rgba(30, 30, 50, 0.85), rgba(15, 15, 28, 0.9));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 16px;
+  padding: 28px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
 }
 
-.auth-head h2 {
-  margin: 0 0 8px;
-  font-size: 22px;
+.auth-title {
+  margin: 0 0 10px;
+  font-size: 20px;
   color: #f0f0f8;
+  text-align: center;
 }
 
-.auth-head p {
-  margin: 0;
+.auth-desc {
+  margin: 0 0 20px;
   font-size: 12px;
   color: #8a8aa8;
+  text-align: center;
   line-height: 1.7;
 }
 
-.master-input-wrap {
-  position: relative;
-  max-width: 360px;
-  margin: 0 auto 12px;
+.field-row {
+  margin-bottom: 14px;
 }
 
-.master-input-wrap input {
+.field-row label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #b0b0c8;
+  margin-bottom: 6px;
+  letter-spacing: 0.5px;
+}
+
+.field-row input {
   width: 100%;
   box-sizing: border-box;
-  padding: 14px 50px 14px 18px;
-  background: rgba(0, 0, 0, 0.4);
-  border: 2px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
+  padding: 12px 14px;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
   color: #f0f0f8;
-  font-size: 16px;
+  font-size: 15px;
   font-family: 'Courier New', monospace;
   letter-spacing: 1px;
-  transition: border-color 0.2s, box-shadow 0.2s;
+  transition: border-color 0.15s, box-shadow 0.15s;
 }
 
-.master-input-wrap input:focus {
+.field-row input:focus {
   outline: none;
   border-color: rgba(46, 213, 115, 0.6);
-  box-shadow: 0 0 0 4px rgba(46, 213, 115, 0.15), 0 0 20px rgba(46, 213, 115, 0.2);
+  box-shadow: 0 0 0 4px rgba(46, 213, 115, 0.15);
+}
+
+.input-wrap {
+  position: relative;
+}
+
+.input-wrap input {
+  padding-right: 52px;
 }
 
 .eye-btn {
@@ -426,44 +465,22 @@ function wipeAll() {
   transform: translateY(-50%);
   background: transparent;
   border: none;
-  font-size: 20px;
   width: 40px;
   height: 40px;
+  font-size: 18px;
   cursor: pointer;
   border-radius: 8px;
   transition: background 0.15s;
 }
 
-.eye-btn:hover {
-  background: rgba(255, 255, 255, 0.08);
-}
+.eye-btn:hover { background: rgba(255, 255, 255, 0.08); }
 
-.confirm-wrap {
-  position: relative;
-  max-width: 360px;
-  margin: 0 auto 12px;
-}
-
-.confirm-wrap input {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 14px 18px;
-  background: rgba(0, 0, 0, 0.4);
-  border: 2px solid rgba(255, 255, 255, 0.12);
-  border-radius: 12px;
-  color: #f0f0f8;
-  font-size: 14px;
-  font-family: 'Courier New', monospace;
-}
-
-.confirm-wrap input:focus {
-  outline: none;
-  border-color: rgba(46, 213, 115, 0.6);
+.strength-slot {
+  margin: 12px 0 18px;
 }
 
 .error-msg {
-  max-width: 360px;
-  margin: 0 auto 12px;
+  margin: 0 0 14px;
   padding: 10px 14px;
   background: rgba(255, 71, 87, 0.12);
   border: 1px solid rgba(255, 71, 87, 0.3);
@@ -483,56 +500,54 @@ function wipeAll() {
 
 .unlock-btn {
   display: block;
-  margin: 24px auto 12px;
-  padding: 0;
+  width: 100%;
+  margin: 8px 0 0;
+  padding: 14px 28px;
   background: linear-gradient(135deg, #2ed573, #00a86b);
   border: none;
   border-radius: 12px;
+  color: white;
+  font-size: 15px;
+  font-weight: 800;
+  letter-spacing: 1px;
   cursor: pointer;
   box-shadow: 0 6px 20px rgba(46, 213, 115, 0.4);
-  transition: transform 0.2s, box-shadow 0.2s;
-  overflow: hidden;
+  transition: transform 0.15s, box-shadow 0.15s, filter 0.15s;
 }
 
-.unlock-btn:hover:not(.spinning) {
-  transform: translateY(-2px);
+.unlock-btn:hover:not(.loading) {
+  transform: translateY(-1px);
   box-shadow: 0 10px 28px rgba(46, 213, 115, 0.6);
 }
 
-.unlock-btn:active:not(.spinning) { transform: translateY(0); }
+.unlock-btn:active:not(.loading) { transform: translateY(0); }
 
-.unlock-btn.spinning {
-  cursor: wait;
+.unlock-btn.loading {
   background: linear-gradient(135deg, #ffb74d, #ff9800);
+  cursor: wait;
   box-shadow: 0 6px 20px rgba(255, 152, 0, 0.4);
 }
 
-.unlock-inner {
+.danger-zone {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  padding: 14px 32px;
-  color: white;
-  font-size: 16px;
-  font-weight: 800;
-  letter-spacing: 1px;
-}
-
-.lock-icon { font-size: 22px; }
-
-.danger-zone {
-  text-align: center;
-  margin-top: 20px;
+  margin-top: 22px;
   padding-top: 16px;
   border-top: 1px dashed rgba(255, 255, 255, 0.08);
+}
+
+.danger-zone span {
+  font-size: 11px;
+  color: #6a6a84;
 }
 
 .wipe-btn {
   background: transparent;
   border: 1px solid rgba(255, 71, 87, 0.3);
   color: #ff6b8a;
-  padding: 6px 14px;
+  padding: 6px 12px;
   border-radius: 8px;
   font-size: 11px;
   cursor: pointer;
@@ -543,6 +558,8 @@ function wipeAll() {
   background: rgba(255, 71, 87, 0.12);
   border-color: rgba(255, 71, 87, 0.6);
 }
+
+.vault-view { position: relative; max-width: 820px; }
 
 .bottom-actions {
   display: flex;
@@ -594,6 +611,7 @@ function wipeAll() {
 @media (max-width: 600px) {
   .brand-title { font-size: 17px; }
   .brand-logo { font-size: 32px; width: 48px; height: 48px; }
-  .auth-head h2 { font-size: 18px; }
+  .auth-title { font-size: 17px; }
+  .auth-card { padding: 22px 18px; }
 }
 </style>
