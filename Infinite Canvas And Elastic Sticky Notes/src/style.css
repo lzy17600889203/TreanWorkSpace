@@ -75,11 +75,12 @@ body.night .toolbar button {
   text-shadow: 0 0 6px rgba(160, 140, 255, 0.5);
 }
 
-.toolbar .hint {
+.hint-bar {
   position: fixed;
   bottom: 16px;
   left: 50%;
   transform: translateX(-50%);
+  z-index: 50;
   background: rgba(255, 255, 255, 0.85);
   border: 1px solid rgba(0, 0, 0, 0.08);
   border-radius: 12px;
@@ -88,9 +89,10 @@ body.night .toolbar button {
   color: #555;
   white-space: nowrap;
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+  pointer-events: none;
 }
 
-body.night .toolbar .hint {
+body.night .hint-bar {
   background: rgba(20, 22, 40, 0.85);
   border-color: rgba(120, 120, 200, 0.3);
   color: #c5c2e8;

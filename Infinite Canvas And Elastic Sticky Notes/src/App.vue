@@ -117,8 +117,11 @@ onMounted(() => {
   stageRef.value.on('mousemove', handleStageMouseMove)
   stageRef.value.on('mouseup', handleStageMouseUp)
   stageRef.value.on('mouseleave', handleStageMouseUp)
-  stageRef.value.on('wheel', handleWheel, { passive: false })
   stageRef.value.on('click tap', handleStageClick)
+
+  // 滚轮缩放：必须用原生 DOM 监听（passive:false）才能 preventDefault，
+  // Konva 的 stage.on('wheel') 默认是 passive，会被浏览器忽略。
+  containerRef.value.addEventListener('wheel', handleWheel, { passive: false })
 
   // 开启弹性动画帧循环
   lastFrameTime = performance.now()
@@ -127,6 +130,9 @@ onMounted(() => {
 
 onBeforeUnmount(() => {
   window.removeEventListener('resize', handleResize)
+  if (containerRef.value) {
+    containerRef.value.removeEventListener('wheel', handleWheel)
+  }
   if (stageRef.value) stageRef.value.destroy()
   if (springLoopRAF) cancelAnimationFrame(springLoopRAF)
 })
@@ -296,11 +302,15 @@ function handleStageMouseUp() {
 }
 
 function handleWheel(e) {
-  e.evt.preventDefault?.()
-  const delta = e.evt.deltaY
+  e.preventDefault()
+  const delta = e.deltaY
   const stage = stageRef.value
+  if (!stage) return
   const oldScale = stage.scaleX()
-  const pointer = stage.getPointerPosition() || { x: 0, y: 0 }
+  const container = containerRef.value
+  const rect = container.getBoundingClientRect()
+  // 原生事件中的 clientX/Y 是视口坐标，stage 的 0/0 也在容器左上角 → 直接可用
+  const pointer = { x: e.clientX - rect.left, y: e.clientY - rect.top }
 
   const mousePointTo = {
     x: (pointer.x - stage.x()) / oldScale,
@@ -845,10 +855,11 @@ function toggleNight() {
       {{ isNight ? '☀️ 日间' : '🌙 夜间' }}
     </button>
     <button @click="resetView">🎯 回到原点</button>
-    <div class="hint">
-      按住空白处拖动画布 · 滚轮缩放 · 双击便签开始连线，再双击另一张完成 ·
-      点 × 删除
-    </div>
+  </div>
+
+  <div class="hint-bar">
+    按住空白处拖动画布 · 滚轮缩放 · 双击便签开始连线，再双击另一张完成 ·
+    点 × 删除
   </div>
 </template>
 
